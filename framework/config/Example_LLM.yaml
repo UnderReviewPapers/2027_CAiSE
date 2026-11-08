@@ -1,0 +1,30 @@
+state:
+  class: state.simple
+
+user_model:
+  class: user_model.simple
+
+orchestrator:
+  name: orchestrator.sequential_traditional_fb
+  params:
+    ask_info_step: "response_generation.llm"
+    fallback_step: "response_generation.llm"
+
+steps:
+  - name: input_processing.llm
+    params:
+      model: "openai.gpt-oss-120b"
+  - name: candidate_selection.llm
+    params:
+      model: "openai.gpt-oss-120b"
+      n_candidates: 20
+  - name: scoring.llm
+    params:
+      model: "openai.gpt-oss-120b"
+  - name: ranking.llm
+    params:
+      model: "openai.gpt-oss-120b"
+      top_k: 10
+  - name: response_generation.llm
+    params:
+      model: "openai.gpt-oss-120b"

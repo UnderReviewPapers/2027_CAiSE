@@ -1,0 +1,18 @@
+state:
+  class: state.simple
+
+user_model:
+  class: user_model.simple
+
+orchestrator:
+  name: orchestrator.sequential_traditional_fb
+  params:
+    ask_info_step: "response_generation.simple_response"
+    fallback_step: "response_generation.simple_response"
+
+steps:
+  - name: input_processing.rule_based
+  - name: candidate_selection.traditional
+  - name: scoring.traditional
+  - name: ranking.traditional
+  - name: response_generation.simple_response

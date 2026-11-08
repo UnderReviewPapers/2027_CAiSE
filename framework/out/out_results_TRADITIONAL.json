@@ -1,0 +1,1479 @@
+{
+    "run_config": {
+        "steps": [
+            {
+                "name": "input_processing.rule_based"
+            },
+            {
+                "name": "candidate_selection.traditional"
+            },
+            {
+                "name": "scoring.traditional"
+            },
+            {
+                "name": "ranking.traditional"
+            },
+            {
+                "name": "response_generation.simple_response"
+            }
+        ],
+        "orchestrator": {
+            "name": "orchestrator.sequential_traditional_fb",
+            "params": {
+                "ask_info_step": "response_generation.simple_response",
+                "fallback_step": "response_generation.simple_response"
+            }
+        }
+    },
+    "results": {
+        "1": {
+            "1": {
+                "query": "Toy Story is great, but maybe something with the same vibe for an older audience?",
+                "interaction_history": [],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "I'm sorry, I couldn't understand your request. Could you please rephrase it easier?",
+                    "recommended_items": []
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.5412934,
+                            "end_time": 1781369678.5418103,
+                            "duration_s": 0.0005,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.5420053,
+                            "end_time": 1781369678.5420976,
+                            "duration_s": 0.0001,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "2": {
+            "1": {
+                "query": "Toy Story is great, but I feel like I've aged out of it",
+                "interaction_history": [],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "I'm sorry, I couldn't understand your request. Could you please rephrase it easier?",
+                    "recommended_items": []
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.5431318,
+                            "end_time": 1781369678.5431619,
+                            "duration_s": 0.0,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.543301,
+                            "end_time": 1781369678.543307,
+                            "duration_s": 0.0,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "3": {
+            "1": {
+                "query": "Recommend me a movie",
+                "interaction_history": [
+                    {
+                        "movieID": 2023,
+                        "datetime": "2007-08-29 15:03:15",
+                        "title": "The Godfather: Part III",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 3174,
+                        "datetime": "2007-08-29 15:04:32",
+                        "title": "Man on the Moon",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 2863,
+                        "datetime": "2007-08-29 15:06:44",
+                        "title": "A Hard Day's Night",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 2114,
+                        "datetime": "2007-08-29 15:08:41",
+                        "title": "The Outsiders",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 51662,
+                        "datetime": "2007-08-29 15:17:16",
+                        "title": "300",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 1367,
+                        "datetime": "2007-08-29 15:18:20",
+                        "title": "One Hundred and One Dalmatians",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 5418,
+                        "datetime": "2007-08-29 15:25:58",
+                        "title": "The Bourne Identity",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 8665,
+                        "datetime": "2007-08-29 15:26:16",
+                        "title": "The Bourne Supremacy",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 296,
+                        "datetime": "2007-08-29 15:26:39",
+                        "title": "Pulp Fiction",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 18,
+                        "datetime": "2007-08-29 15:27:51",
+                        "title": "Four Rooms",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 1729,
+                        "datetime": "2007-08-29 15:27:54",
+                        "title": "Jackie Brown",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 6874,
+                        "datetime": "2007-08-29 15:28:02",
+                        "title": "Kill Bill: Vol. 2",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 7438,
+                        "datetime": "2007-08-29 15:28:05",
+                        "title": "Kill Bill: Vol. 2",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 1089,
+                        "datetime": "2007-08-29 15:28:08",
+                        "title": "Reservoir Dogs",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 1210,
+                        "datetime": "2007-08-29 15:29:13",
+                        "title": "Star Wars: Episode VI - Return of the Jedi",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 4011,
+                        "datetime": "2007-08-29 15:30:58",
+                        "title": "Snatch.",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 38061,
+                        "datetime": "2007-08-29 15:33:03",
+                        "title": "Kiss Kiss Bang Bang",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 4262,
+                        "datetime": "2007-08-29 15:33:37",
+                        "title": "Scarface",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 49272,
+                        "datetime": "2007-08-29 15:35:49",
+                        "title": "Casino Royale",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 2571,
+                        "datetime": "2007-08-29 15:37:00",
+                        "title": "The Matrix",
+                        "rating": 5.0
+                    }
+                ],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "Here's a selection of films you may enjoy:\n\n1. The Shawshank Redemption (1994)\n   Genres    : Drama\n   Director  : Frank Darabont\n   Audience  : 4.4/5  |  Critics: 8.0/10\n   IMDb      : https://www.imdb.com/title/tt0111161/\n\n2. The Lord of the Rings: The Fellowship of the Ring (2001)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 4.1/5  |  Critics: 8.1/10\n   IMDb      : https://www.imdb.com/title/tt0120737/\n\n3. The Lord of the Rings: The Two Towers (2002)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 4.1/5  |  Critics: 8.4/10\n   IMDb      : https://www.imdb.com/title/tt0167261/\n\n4. Fight Club (1999)\n   Genres    : Action, Crime, Drama, Thriller\n   Director  : David Fincher\n   Audience  : 4.2/5  |  Critics: 7.3/10\n   IMDb      : https://www.imdb.com/title/tt0137523/\n\n5. The Lord of the Rings: The Return of the King (2003)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 3.7/5  |  Critics: 8.6/10\n   IMDb      : https://www.imdb.com/title/tt0167260/\n\n6. The Godfather (1972)\n   Genres    : Crime, Drama\n   Director  : Francis Ford Coppola\n   Audience  : 4.4/5  |  Critics: 9.0/10\n   IMDb      : https://www.imdb.com/title/tt0068646/\n\n7. Forrest Gump (1994)\n   Genres    : Comedy, Drama, Romance, War\n   Director  : Robert Zemeckis\n   Audience  : 4.1/5  |  Critics: 6.9/10\n   IMDb      : https://www.imdb.com/title/tt0109830/\n\n8. American Beauty (1999)\n   Genres    : Drama\n   Director  : Sam Mendes\n   Audience  : 3.8/5  |  Critics: 8.0/10\n   IMDb      : https://www.imdb.com/title/tt0169547/\n\n9. The Silence of the Lambs (1991)\n   Genres    : Crime, Horror, Thriller\n   Director  : Jonathan Demme\n   Audience  : 4.0/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0102926/\n\n10. Schindler's List (1993)\n   Genres    : Drama, War\n   Director  : Steven Spielberg\n   Audience  : 4.3/5  |  Critics: 8.8/10\n   IMDb      : https://www.imdb.com/title/tt0108052/",
+                    "recommended_items": [
+                        {
+                            "id": 318,
+                            "score": 0.8971098528024666,
+                            "title": "The Shawshank Redemption"
+                        },
+                        {
+                            "id": 4993,
+                            "score": 0.8473444385463216,
+                            "title": "The Lord of the Rings: The Fellowship of the Ring"
+                        },
+                        {
+                            "id": 5952,
+                            "score": 0.8367072776534148,
+                            "title": "The Lord of the Rings: The Two Towers"
+                        },
+                        {
+                            "id": 2959,
+                            "score": 0.836359491375338,
+                            "title": "Fight Club"
+                        },
+                        {
+                            "id": 7153,
+                            "score": 0.8339153827470367,
+                            "title": "The Lord of the Rings: The Return of the King"
+                        },
+                        {
+                            "id": 858,
+                            "score": 0.7969409005334942,
+                            "title": "The Godfather"
+                        },
+                        {
+                            "id": 356,
+                            "score": 0.7717418001370511,
+                            "title": "Forrest Gump"
+                        },
+                        {
+                            "id": 2858,
+                            "score": 0.7676823444904246,
+                            "title": "American Beauty"
+                        },
+                        {
+                            "id": 593,
+                            "score": 0.7584305847447014,
+                            "title": "The Silence of the Lambs"
+                        },
+                        {
+                            "id": 527,
+                            "score": 0.7107857096422753,
+                            "title": "Schindler's List"
+                        }
+                    ]
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.5440655,
+                            "end_time": 1781369678.5441337,
+                            "duration_s": 0.0001,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "candidate_selection.traditional",
+                            "step_class": "ALSGenerator",
+                            "start_time": 1781369678.54428,
+                            "end_time": 1781369678.555796,
+                            "duration_s": 0.0115,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "scoring.traditional",
+                            "step_class": "SimpleScorer",
+                            "start_time": 1781369678.5560148,
+                            "end_time": 1781369678.56113,
+                            "duration_s": 0.0051,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "ranking.traditional",
+                            "step_class": "SortRanker",
+                            "start_time": 1781369678.5613992,
+                            "end_time": 1781369678.5643454,
+                            "duration_s": 0.0029,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.5647795,
+                            "end_time": 1781369678.5776255,
+                            "duration_s": 0.0128,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "4": {
+            "1": {
+                "query": "Recommend me a movie",
+                "interaction_history": [
+                    {
+                        "movieID": 2792,
+                        "datetime": "2008-10-28 20:18:07",
+                        "title": "Airplane II: The Sequel",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 1021,
+                        "datetime": "2008-10-28 20:19:23",
+                        "title": "Angels in the Outfield",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 4214,
+                        "datetime": "2008-10-28 20:19:46",
+                        "title": "Revenge of the Nerds",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 7360,
+                        "datetime": "2008-10-28 20:19:54",
+                        "title": "Dawn of the Dead",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 4728,
+                        "datetime": "2008-10-28 20:20:01",
+                        "title": "Rat Race",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 58559,
+                        "datetime": "2008-10-28 20:20:20",
+                        "title": "The Dark Knight",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 2947,
+                        "datetime": "2008-10-28 21:02:32",
+                        "title": "Goldfinger",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 180,
+                        "datetime": "2008-10-28 21:02:59",
+                        "title": "Mallrats",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 1253,
+                        "datetime": "2008-10-28 21:04:03",
+                        "title": "The Day the Earth Stood Still",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 3697,
+                        "datetime": "2008-10-28 21:04:56",
+                        "title": "Predator",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 48385,
+                        "datetime": "2008-10-28 21:05:43",
+                        "title": "Borat: Cultural Learnings of America for Make Benefit Glorious Nation of Kazakhstan",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 6502,
+                        "datetime": "2008-10-29 00:10:31",
+                        "title": "28 Days Later...",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 54503,
+                        "datetime": "2008-10-29 00:14:10",
+                        "title": "Superbad",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 48774,
+                        "datetime": "2008-10-29 00:14:38",
+                        "title": "Children of Men",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 296,
+                        "datetime": "2008-10-29 00:16:03",
+                        "title": "Pulp Fiction",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 1089,
+                        "datetime": "2008-10-29 00:16:42",
+                        "title": "Reservoir Dogs",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 3671,
+                        "datetime": "2008-10-29 00:20:47",
+                        "title": "Blazing Saddles",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 2791,
+                        "datetime": "2008-10-29 00:21:44",
+                        "title": "Airplane!",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 3421,
+                        "datetime": "2008-10-29 00:23:19",
+                        "title": "Animal House",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 53000,
+                        "datetime": "2008-10-29 00:25:22",
+                        "title": "28 Weeks Later",
+                        "rating": 5.0
+                    }
+                ],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "Here are some movies you might like:\n\n1. Hot Fuzz (2007)\n   Genres    : Action, Comedy, Crime\n   Director  : Edgar Wright\n   Audience  : 4.0/5  |  Critics: 7.7/10\n   IMDb      : https://www.imdb.com/title/tt0425112/\n\n2. No Country for Old Men (2007)\n   Genres    : Crime, Drama, Thriller\n   Director  : Ethan Coen\n   Audience  : 4.0/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0477348/\n\n3. Army of Darkness (1992)\n   Genres    : Action, Adventure, Comedy, Fantasy, Horror\n   Director  : Sam Raimi\n   Audience  : 3.8/5  |  Critics: 6.9/10\n   IMDb      : https://www.imdb.com/title/tt0106308/\n\n4. Grindhouse (2007)\n   Genres    : Action, Crime, Horror, Sci-Fi, Thriller\n   Director  : Robert Rodriguez\n   Audience  : 3.9/5  |  Critics: 7.4/10\n   IMDb      : https://www.imdb.com/title/tt0462322/\n\n5. There Will Be Blood (2007)\n   Genres    : Drama\n   Director  : Paul Thomas Anderson\n   Audience  : 4.0/5  |  Critics: 8.4/10\n   IMDb      : https://www.imdb.com/title/tt0469494/\n\n6. Juno (2007)\n   Genres    : Drama, Romance\n   Director  : Jason Reitman\n   Audience  : 4.1/5  |  Critics: 8.1/10\n   IMDb      : https://www.imdb.com/title/tt0467406/\n\n7. I Am Legend (2007)\n   Genres    : Action, Horror, Sci-Fi, Thriller\n   Director  : Francis Lawrence\n   Audience  : 3.6/5  |  Critics: 6.3/10\n   IMDb      : https://www.imdb.com/title/tt0480249/\n\n8. Shaun of the Dead (2004)\n   Genres    : Comedy, Horror, Romance\n   Director  : Edgar Wright\n   Audience  : 3.9/5  |  Critics: 7.7/10\n   IMDb      : https://www.imdb.com/title/tt0365748/\n\n9. 3:10 to Yuma (2007)\n   Genres    : Action, Crime, Drama, Western\n   Director  : James Mangold\n   Audience  : 3.9/5  |  Critics: 7.5/10\n   IMDb      : https://www.imdb.com/title/tt0381849/\n\n10. The Bourne Ultimatum (2007)\n   Genres    : Action, Adventure, Mystery, Thriller\n   Director  : Paul Greengrass\n   Audience  : 4.1/5  |  Critics: 7.9/10\n   IMDb      : https://www.imdb.com/title/tt0440963/",
+                    "recommended_items": [
+                        {
+                            "id": 51255,
+                            "score": 0.8669131327473035,
+                            "title": "Hot Fuzz"
+                        },
+                        {
+                            "id": 55820,
+                            "score": 0.8305690621069222,
+                            "title": "No Country for Old Men"
+                        },
+                        {
+                            "id": 1215,
+                            "score": 0.8157234272156411,
+                            "title": "Army of Darkness"
+                        },
+                        {
+                            "id": 52281,
+                            "score": 0.7233756908179313,
+                            "title": "Grindhouse"
+                        },
+                        {
+                            "id": 56782,
+                            "score": 0.7200788548359869,
+                            "title": "There Will Be Blood"
+                        },
+                        {
+                            "id": 56367,
+                            "score": 0.7013002545227488,
+                            "title": "Juno"
+                        },
+                        {
+                            "id": 56174,
+                            "score": 0.6998917088240636,
+                            "title": "I Am Legend"
+                        },
+                        {
+                            "id": 8874,
+                            "score": 0.6599126022850688,
+                            "title": "Shaun of the Dead"
+                        },
+                        {
+                            "id": 54997,
+                            "score": 0.6284610488278974,
+                            "title": "3:10 to Yuma"
+                        },
+                        {
+                            "id": 54286,
+                            "score": 0.6093487779656198,
+                            "title": "The Bourne Ultimatum"
+                        }
+                    ]
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.5877528,
+                            "end_time": 1781369678.587883,
+                            "duration_s": 0.0001,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "candidate_selection.traditional",
+                            "step_class": "ALSGenerator",
+                            "start_time": 1781369678.5880425,
+                            "end_time": 1781369678.5909574,
+                            "duration_s": 0.0029,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "scoring.traditional",
+                            "step_class": "SimpleScorer",
+                            "start_time": 1781369678.5911257,
+                            "end_time": 1781369678.5937512,
+                            "duration_s": 0.0026,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "ranking.traditional",
+                            "step_class": "SortRanker",
+                            "start_time": 1781369678.5939085,
+                            "end_time": 1781369678.5945635,
+                            "duration_s": 0.0007,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.594724,
+                            "end_time": 1781369678.601522,
+                            "duration_s": 0.0068,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "5": {
+            "1": {
+                "query": "Recommend me a movie",
+                "interaction_history": [
+                    {
+                        "movieID": 923,
+                        "datetime": "2006-08-09 21:24:49",
+                        "title": "Citizen Kane",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 920,
+                        "datetime": "2006-08-09 21:24:58",
+                        "title": "Gone with the Wind",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 1374,
+                        "datetime": "2006-08-09 21:25:21",
+                        "title": "Star Trek: The Wrath of Khan",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 908,
+                        "datetime": "2006-08-09 21:25:36",
+                        "title": "North by Northwest",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 2700,
+                        "datetime": "2006-08-09 21:25:39",
+                        "title": "South Park: Bigger Longer & Uncut",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 2640,
+                        "datetime": "2006-08-09 21:25:42",
+                        "title": "Superman",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 2406,
+                        "datetime": "2006-08-09 21:26:00",
+                        "title": "Romancing the Stone",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 904,
+                        "datetime": "2006-08-09 21:26:16",
+                        "title": "Rear Window",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 5349,
+                        "datetime": "2006-08-09 21:26:37",
+                        "title": "Spider-Man",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 1676,
+                        "datetime": "2006-08-09 21:26:40",
+                        "title": "Starship Troopers",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 168,
+                        "datetime": "2006-08-09 21:27:09",
+                        "title": "First Knight",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 1376,
+                        "datetime": "2006-08-09 21:27:33",
+                        "title": "Star Trek IV: The Voyage Home",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 2100,
+                        "datetime": "2006-08-09 21:28:04",
+                        "title": "Splash",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 2006,
+                        "datetime": "2006-08-09 21:28:13",
+                        "title": "The Mask of Zorro",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 46530,
+                        "datetime": "2006-08-09 21:29:53",
+                        "title": "Superman Returns",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 46970,
+                        "datetime": "2006-08-09 21:30:27",
+                        "title": "Talladega Nights: The Ballad of Ricky Bobby",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 45499,
+                        "datetime": "2006-08-09 21:31:17",
+                        "title": "X-Men: The Last Stand",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 2420,
+                        "datetime": "2006-08-09 21:32:30",
+                        "title": "The Karate Kid",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 7247,
+                        "datetime": "2006-08-09 21:32:55",
+                        "title": "Chitty Chitty Bang Bang",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 1129,
+                        "datetime": "2006-08-09 21:33:01",
+                        "title": "Escape from New York",
+                        "rating": 5.0
+                    }
+                ],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "Based on your preferences, here's what I recommend:\n\n1. Star Trek VI: The Undiscovered Country (1991)\n   Genres    : Action, Mystery, Sci-Fi\n   Director  : Nicholas Meyer\n   Audience  : 3.5/5  |  Critics: 6.8/10\n   IMDb      : https://www.imdb.com/title/tt0102975/\n\n2. Star Trek: First Contact (1996)\n   Genres    : Action, Adventure, Sci-Fi, Thriller\n   Director  : Jonathan Frakes\n   Audience  : 3.5/5  |  Critics: 7.4/10\n   IMDb      : https://www.imdb.com/title/tt0117731/\n\n3. Star Trek: Generations (1994)\n   Genres    : Action, Adventure, Drama, Sci-Fi\n   Director  : David Carson\n   Audience  : 3.3/5  |  Critics: 5.5/10\n   IMDb      : https://www.imdb.com/title/tt0111280/\n\n4. Grease (1978)\n   Genres    : Comedy, Musical, Romance\n   Director  : Randal Kleiser\n   Audience  : 3.7/5  |  Critics: 6.7/10\n   IMDb      : https://www.imdb.com/title/tt0077631/\n\n5. The Little Mermaid (1989)\n   Genres    : Animation, Children, Comedy, Musical, Romance\n   Director  : John Musker\n   Audience  : 3.6/5  |  Critics: 8.0/10\n   IMDb      : https://www.imdb.com/title/tt0097757/\n\n6. Superman II (1980)\n   Genres    : Action, Adventure, Fantasy, Sci-Fi\n   Director  : Richard Lester\n   Audience  : 3.2/5  |  Critics: 7.4/10\n   IMDb      : https://www.imdb.com/title/tt0081573/\n\n7. The Goonies (1985)\n   Genres    : Adventure, Children, Comedy, Fantasy\n   Director  : Richard Donner\n   Audience  : 3.8/5  |  Critics: 5.9/10\n   IMDb      : https://www.imdb.com/title/tt0089218/\n\n8. Star Trek III: The Search for Spock (1984)\n   Genres    : Action, Adventure, Sci-Fi\n   Director  : Leonard Nimoy\n   Audience  : 3.3/5  |  Critics: 6.4/10\n   IMDb      : https://www.imdb.com/title/tt0088170/\n\n9. Batman Returns (1992)\n   Genres    : Action, Crime, Fantasy, Mystery, Romance, Thriller\n   Director  : Tim Burton\n   Audience  : 3.3/5  |  Critics: 6.5/10\n   IMDb      : https://www.imdb.com/title/tt0103776/\n\n10. Young Frankenstein (1974)\n   Genres    : Action, Comedy, Horror\n   Director  : Mel Brooks\n   Audience  : 3.8/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0072431/",
+                    "recommended_items": [
+                        {
+                            "id": 1372,
+                            "score": 0.7835429212775387,
+                            "title": "Star Trek VI: The Undiscovered Country"
+                        },
+                        {
+                            "id": 1356,
+                            "score": 0.7059177455765066,
+                            "title": "Star Trek: First Contact"
+                        },
+                        {
+                            "id": 329,
+                            "score": 0.6133908055717521,
+                            "title": "Star Trek: Generations"
+                        },
+                        {
+                            "id": 1380,
+                            "score": 0.6041392853532895,
+                            "title": "Grease"
+                        },
+                        {
+                            "id": 2081,
+                            "score": 0.6017596888735377,
+                            "title": "The Little Mermaid"
+                        },
+                        {
+                            "id": 2641,
+                            "score": 0.5882686292512258,
+                            "title": "Superman II"
+                        },
+                        {
+                            "id": 2005,
+                            "score": 0.5813073159978722,
+                            "title": "The Goonies"
+                        },
+                        {
+                            "id": 1375,
+                            "score": 0.5734141216613787,
+                            "title": "Star Trek III: The Search for Spock"
+                        },
+                        {
+                            "id": 1377,
+                            "score": 0.5705166251205697,
+                            "title": "Batman Returns"
+                        },
+                        {
+                            "id": 1278,
+                            "score": 0.5525895703041152,
+                            "title": "Young Frankenstein"
+                        }
+                    ]
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.6088066,
+                            "end_time": 1781369678.608913,
+                            "duration_s": 0.0001,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "candidate_selection.traditional",
+                            "step_class": "ALSGenerator",
+                            "start_time": 1781369678.609056,
+                            "end_time": 1781369678.6118083,
+                            "duration_s": 0.0028,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "scoring.traditional",
+                            "step_class": "SimpleScorer",
+                            "start_time": 1781369678.6119907,
+                            "end_time": 1781369678.6146774,
+                            "duration_s": 0.0027,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "ranking.traditional",
+                            "step_class": "SortRanker",
+                            "start_time": 1781369678.6150086,
+                            "end_time": 1781369678.6158738,
+                            "duration_s": 0.0009,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.6160707,
+                            "end_time": 1781369678.6215026,
+                            "duration_s": 0.0054,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "6": {
+            "1": {
+                "query": "Recommend me a movie",
+                "interaction_history": [
+                    {
+                        "movieID": 1517,
+                        "datetime": "2006-04-09 10:06:51",
+                        "title": "Austin Powers: International Man of Mystery",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 3996,
+                        "datetime": "2006-04-09 10:07:02",
+                        "title": "Wo hu cang long",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 2012,
+                        "datetime": "2006-04-09 10:08:02",
+                        "title": "Back to the Future Part III",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 2174,
+                        "datetime": "2006-04-09 10:08:04",
+                        "title": "Beetle Juice",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 1080,
+                        "datetime": "2006-04-09 10:08:27",
+                        "title": "Life of Brian",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 2011,
+                        "datetime": "2006-04-09 10:08:37",
+                        "title": "Back to the Future Part II",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 420,
+                        "datetime": "2006-04-09 10:08:40",
+                        "title": "Beverly Hills Cop III",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 497,
+                        "datetime": "2006-04-09 10:08:53",
+                        "title": "Much Ado About Nothing",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 318,
+                        "datetime": "2006-04-09 10:10:40",
+                        "title": "The Shawshank Redemption",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 745,
+                        "datetime": "2006-04-09 10:10:59",
+                        "title": "Wallace and Gromit in A Close Shave",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 1148,
+                        "datetime": "2006-04-09 10:11:01",
+                        "title": "Wallace & Gromit in The Wrong Trousers",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 4973,
+                        "datetime": "2006-04-09 10:11:08",
+                        "title": "Le fabuleux destin d'Am\u00e9lie Poulain",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 1270,
+                        "datetime": "2006-04-09 10:11:49",
+                        "title": "Back to the Future",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 4085,
+                        "datetime": "2006-04-09 10:11:56",
+                        "title": "Beverly Hills Cop",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 2716,
+                        "datetime": "2006-04-09 10:12:06",
+                        "title": "Ghost Busters",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 1291,
+                        "datetime": "2006-04-09 10:13:04",
+                        "title": "Indiana Jones and the Last Crusade",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 2115,
+                        "datetime": "2006-04-09 10:13:14",
+                        "title": "Indiana Jones and the Temple of Doom",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 589,
+                        "datetime": "2006-04-09 10:13:21",
+                        "title": "Terminator 2: Judgment Day",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 3868,
+                        "datetime": "2006-04-09 10:13:35",
+                        "title": "The Naked Gun: From the Files of Police Squad!",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 1240,
+                        "datetime": "2006-04-09 10:14:19",
+                        "title": "Terminator Salvation",
+                        "rating": 4.0
+                    }
+                ],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "Here are some movies you might like:\n\n1. The Lord of the Rings: The Fellowship of the Ring (2001)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 4.1/5  |  Critics: 8.1/10\n   IMDb      : https://www.imdb.com/title/tt0120737/\n\n2. The Lord of the Rings: The Two Towers (2002)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 4.1/5  |  Critics: 8.4/10\n   IMDb      : https://www.imdb.com/title/tt0167261/\n\n3. Pulp Fiction (1994)\n   Genres    : Comedy, Crime, Drama\n   Director  : Quentin Tarantino\n   Audience  : 4.2/5  |  Critics: 8.9/10\n   IMDb      : https://www.imdb.com/title/tt0110912/\n\n4. The Lord of the Rings: The Return of the King (2003)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 3.7/5  |  Critics: 8.6/10\n   IMDb      : https://www.imdb.com/title/tt0167260/\n\n5. The Matrix (1999)\n   Genres    : Action, Sci-Fi, Thriller\n   Director  : Andy Wachowski\n   Audience  : 3.6/5  |  Critics: 7.4/10\n   IMDb      : https://www.imdb.com/title/tt0133093/\n\n6. American Beauty (1999)\n   Genres    : Drama\n   Director  : Sam Mendes\n   Audience  : 3.8/5  |  Critics: 8.0/10\n   IMDb      : https://www.imdb.com/title/tt0169547/\n\n7. Star Wars (1977)\n   Genres    : Action, Adventure, Sci-Fi\n   Director  : George Lucas\n   Audience  : 4.1/5  |  Critics: 8.2/10\n   IMDb      : https://www.imdb.com/title/tt0076759/\n\n8. Star Wars: Episode V - The Empire Strikes Back (1980)\n   Genres    : Action, Adventure, Sci-Fi\n   Director  : Irvin Kershner\n   Audience  : 4.1/5  |  Critics: 8.6/10\n   IMDb      : https://www.imdb.com/title/tt0080684/\n\n9. The Silence of the Lambs (1991)\n   Genres    : Crime, Horror, Thriller\n   Director  : Jonathan Demme\n   Audience  : 4.0/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0102926/\n\n10. Schindler's List (1993)\n   Genres    : Drama, War\n   Director  : Steven Spielberg\n   Audience  : 4.3/5  |  Critics: 8.8/10\n   IMDb      : https://www.imdb.com/title/tt0108052/",
+                    "recommended_items": [
+                        {
+                            "id": 4993,
+                            "score": 0.8703670049811116,
+                            "title": "The Lord of the Rings: The Fellowship of the Ring"
+                        },
+                        {
+                            "id": 5952,
+                            "score": 0.8626578940137393,
+                            "title": "The Lord of the Rings: The Two Towers"
+                        },
+                        {
+                            "id": 296,
+                            "score": 0.849295515221729,
+                            "title": "Pulp Fiction"
+                        },
+                        {
+                            "id": 7153,
+                            "score": 0.8436167459968029,
+                            "title": "The Lord of the Rings: The Return of the King"
+                        },
+                        {
+                            "id": 2571,
+                            "score": 0.8421829487156647,
+                            "title": "The Matrix"
+                        },
+                        {
+                            "id": 2858,
+                            "score": 0.7731004292685092,
+                            "title": "American Beauty"
+                        },
+                        {
+                            "id": 260,
+                            "score": 0.7642135837570654,
+                            "title": "Star Wars"
+                        },
+                        {
+                            "id": 1196,
+                            "score": 0.7518028150728469,
+                            "title": "Star Wars: Episode V - The Empire Strikes Back"
+                        },
+                        {
+                            "id": 593,
+                            "score": 0.746519063778338,
+                            "title": "The Silence of the Lambs"
+                        },
+                        {
+                            "id": 527,
+                            "score": 0.7413487163165422,
+                            "title": "Schindler's List"
+                        }
+                    ]
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.6293278,
+                            "end_time": 1781369678.6295345,
+                            "duration_s": 0.0002,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "candidate_selection.traditional",
+                            "step_class": "ALSGenerator",
+                            "start_time": 1781369678.630082,
+                            "end_time": 1781369678.6341243,
+                            "duration_s": 0.004,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "scoring.traditional",
+                            "step_class": "SimpleScorer",
+                            "start_time": 1781369678.6344159,
+                            "end_time": 1781369678.6371408,
+                            "duration_s": 0.0027,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "ranking.traditional",
+                            "step_class": "SortRanker",
+                            "start_time": 1781369678.6373608,
+                            "end_time": 1781369678.638068,
+                            "duration_s": 0.0007,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.638244,
+                            "end_time": 1781369678.6435428,
+                            "duration_s": 0.0053,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "7": {
+            "1": {
+                "query": "Recommend me a movie",
+                "interaction_history": [
+                    {
+                        "movieID": 6218,
+                        "datetime": "2007-05-06 03:38:14",
+                        "title": "Bend It Like Beckham",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 3264,
+                        "datetime": "2007-05-06 03:39:05",
+                        "title": "Buffy the Vampire Slayer",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 40815,
+                        "datetime": "2007-05-06 03:39:24",
+                        "title": "Harry Potter and the Goblet of Fire",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 358,
+                        "datetime": "2007-05-06 03:40:23",
+                        "title": "Higher Learning",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 45499,
+                        "datetime": "2007-05-06 03:40:45",
+                        "title": "X-Men: The Last Stand",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 1734,
+                        "datetime": "2007-05-06 03:41:12",
+                        "title": "Ma vie en rose",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 48394,
+                        "datetime": "2007-05-06 03:42:28",
+                        "title": "El laberinto del fauno",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 3930,
+                        "datetime": "2007-05-06 03:42:50",
+                        "title": "Creature from the Black Lagoon",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 2958,
+                        "datetime": "2007-05-06 03:53:14",
+                        "title": "Naturally Native",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 4878,
+                        "datetime": "2007-05-06 03:58:09",
+                        "title": "Donnie Darko",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 30991,
+                        "datetime": "2007-05-06 03:58:26",
+                        "title": "Powwow Highway",
+                        "rating": 5.0
+                    },
+                    {
+                        "movieID": 1914,
+                        "datetime": "2007-05-06 03:58:43",
+                        "title": "Smoke Signals",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 6647,
+                        "datetime": "2007-05-06 03:59:01",
+                        "title": "The Business of Fancydancing",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 44191,
+                        "datetime": "2007-05-06 03:59:42",
+                        "title": "V for Vendetta",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 17,
+                        "datetime": "2007-05-06 04:00:07",
+                        "title": "Sense and Sensibility",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 235,
+                        "datetime": "2007-05-06 04:00:42",
+                        "title": "Ed Wood",
+                        "rating": 4.5
+                    },
+                    {
+                        "movieID": 1967,
+                        "datetime": "2007-05-06 04:01:00",
+                        "title": "Labyrinth",
+                        "rating": 4.0
+                    },
+                    {
+                        "movieID": 5669,
+                        "datetime": "2007-05-06 04:02:36",
+                        "title": "Bowling for Columbine",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 5791,
+                        "datetime": "2007-05-06 04:02:40",
+                        "title": "Frida",
+                        "rating": 3.5
+                    },
+                    {
+                        "movieID": 2291,
+                        "datetime": "2007-05-06 04:03:01",
+                        "title": "Edward Scissorhands",
+                        "rating": 3.5
+                    }
+                ],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "Based on your preferences, here's what I recommend:\n\n1. Le fabuleux destin d'Am\u00e9lie Poulain (2001)\n   Genres    : Comedy, Romance\n   Director  : Jean-Pierre Jeunet\n   Audience  : 4.2/5  |  Critics: 7.9/10\n   IMDb      : https://www.imdb.com/title/tt0211915/\n\n2. Pulp Fiction (1994)\n   Genres    : Comedy, Crime, Drama\n   Director  : Quentin Tarantino\n   Audience  : 4.2/5  |  Critics: 8.9/10\n   IMDb      : https://www.imdb.com/title/tt0110912/\n\n3. Fight Club (1999)\n   Genres    : Action, Crime, Drama, Thriller\n   Director  : David Fincher\n   Audience  : 4.2/5  |  Critics: 7.3/10\n   IMDb      : https://www.imdb.com/title/tt0137523/\n\n4. American Beauty (1999)\n   Genres    : Drama\n   Director  : Sam Mendes\n   Audience  : 3.8/5  |  Critics: 8.0/10\n   IMDb      : https://www.imdb.com/title/tt0169547/\n\n5. Eternal Sunshine of the Spotless Mind (2004)\n   Genres    : Comedy, Drama, Romance, Sci-Fi\n   Director  : Michel Gondry\n   Audience  : 4.0/5  |  Critics: 8.3/10\n   IMDb      : https://www.imdb.com/title/tt0338013/\n\n6. The Shawshank Redemption (1994)\n   Genres    : Drama\n   Director  : Frank Darabont\n   Audience  : 4.4/5  |  Critics: 8.0/10\n   IMDb      : https://www.imdb.com/title/tt0111161/\n\n7. Memento (2000)\n   Genres    : Crime, Drama, Mystery, Thriller\n   Director  : Christopher Nolan\n   Audience  : 4.0/5  |  Critics: 8.1/10\n   IMDb      : https://www.imdb.com/title/tt0209144/\n\n8. American History X (1998)\n   Genres    : Crime, Drama\n   Director  : Tony Kaye\n   Audience  : 4.2/5  |  Critics: 7.2/10\n   IMDb      : https://www.imdb.com/title/tt0120586/\n\n9. The Rocky Horror Picture Show (1975)\n   Genres    : Comedy, Horror, Musical, Sci-Fi\n   Director  : Jim Sharman\n   Audience  : 3.6/5  |  Critics: 6.5/10\n   IMDb      : https://www.imdb.com/title/tt0073629/\n\n10. The Lord of the Rings: The Fellowship of the Ring (2001)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 4.1/5  |  Critics: 8.1/10\n   IMDb      : https://www.imdb.com/title/tt0120737/",
+                    "recommended_items": [
+                        {
+                            "id": 4973,
+                            "score": 0.8819139974041044,
+                            "title": "Le fabuleux destin d'Am\u00e9lie Poulain"
+                        },
+                        {
+                            "id": 296,
+                            "score": 0.8653354250648568,
+                            "title": "Pulp Fiction"
+                        },
+                        {
+                            "id": 2959,
+                            "score": 0.8574187017548536,
+                            "title": "Fight Club"
+                        },
+                        {
+                            "id": 2858,
+                            "score": 0.7799578871178796,
+                            "title": "American Beauty"
+                        },
+                        {
+                            "id": 7361,
+                            "score": 0.7486521650180142,
+                            "title": "Eternal Sunshine of the Spotless Mind"
+                        },
+                        {
+                            "id": 318,
+                            "score": 0.7331993046493517,
+                            "title": "The Shawshank Redemption"
+                        },
+                        {
+                            "id": 4226,
+                            "score": 0.7057482844263668,
+                            "title": "Memento"
+                        },
+                        {
+                            "id": 2329,
+                            "score": 0.6753836795472278,
+                            "title": "American History X"
+                        },
+                        {
+                            "id": 2657,
+                            "score": 0.6700787848671005,
+                            "title": "The Rocky Horror Picture Show"
+                        },
+                        {
+                            "id": 4993,
+                            "score": 0.6323497906684074,
+                            "title": "The Lord of the Rings: The Fellowship of the Ring"
+                        }
+                    ]
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.6537325,
+                            "end_time": 1781369678.653887,
+                            "duration_s": 0.0002,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "candidate_selection.traditional",
+                            "step_class": "ALSGenerator",
+                            "start_time": 1781369678.6540537,
+                            "end_time": 1781369678.657013,
+                            "duration_s": 0.003,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "scoring.traditional",
+                            "step_class": "SimpleScorer",
+                            "start_time": 1781369678.657179,
+                            "end_time": 1781369678.6592586,
+                            "duration_s": 0.0021,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "ranking.traditional",
+                            "step_class": "SortRanker",
+                            "start_time": 1781369678.659425,
+                            "end_time": 1781369678.6601145,
+                            "duration_s": 0.0007,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.660255,
+                            "end_time": 1781369678.6667426,
+                            "duration_s": 0.0065,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "8": {
+            "1": {
+                "query": "I like Adventure movies. Suggest me some.",
+                "interaction_history": [],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "Here are some movies you might like:\n\n1. The Bourne Ultimatum (2007)\n   Genres    : Action, Adventure, Mystery, Thriller\n   Director  : Paul Greengrass\n   Audience  : 4.1/5  |  Critics: 7.9/10\n   IMDb      : https://www.imdb.com/title/tt0440963/\n\n2. WALL\u00b7E (2008)\n   Genres    : Adventure, Animation, Children, Comedy, Romance, Sci-Fi\n   Director  : Andrew Stanton\n   Audience  : 4.2/5  |  Critics: 8.4/10\n   IMDb      : https://www.imdb.com/title/tt0910970/\n\n3. The Lord of the Rings: The Two Towers (2002)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 4.1/5  |  Critics: 8.4/10\n   IMDb      : https://www.imdb.com/title/tt0167261/\n\n4. Star Wars: Episode V - The Empire Strikes Back (1980)\n   Genres    : Action, Adventure, Sci-Fi\n   Director  : Irvin Kershner\n   Audience  : 4.1/5  |  Critics: 8.6/10\n   IMDb      : https://www.imdb.com/title/tt0080684/\n\n5. The Lord of the Rings: The Fellowship of the Ring (2001)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 4.1/5  |  Critics: 8.1/10\n   IMDb      : https://www.imdb.com/title/tt0120737/\n\n6. Star Wars (1977)\n   Genres    : Action, Adventure, Sci-Fi\n   Director  : George Lucas\n   Audience  : 4.1/5  |  Critics: 8.2/10\n   IMDb      : https://www.imdb.com/title/tt0076759/\n\n7. Finding Nemo (2003)\n   Genres    : Adventure, Animation, Children, Comedy\n   Director  : Andrew Stanton\n   Audience  : 3.8/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0266543/\n\n8. Sen to Chihiro no kamikakushi (2001)\n   Genres    : Adventure, Animation, Children, Fantasy\n   Director  : Hayao Miyazaki\n   Audience  : 4.1/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0245429/\n\n9. The Lord of the Rings: The Return of the King (2003)\n   Genres    : Adventure, Animation, Children, Fantasy\n   Director  : Peter Jackson\n   Audience  : 3.7/5  |  Critics: 8.6/10\n   IMDb      : https://www.imdb.com/title/tt0167260/\n\n10. The Lord of the Rings: The Return of the King (2003)\n   Genres    : Action, Adventure, Fantasy\n   Director  : Peter Jackson\n   Audience  : 3.7/5  |  Critics: 8.6/10\n   IMDb      : https://www.imdb.com/title/tt0167260/",
+                    "recommended_items": [
+                        {
+                            "id": 54286,
+                            "title": "The Bourne Ultimatum",
+                            "year": 2007,
+                            "avg_rating": 4.1,
+                            "score": 0.8686550648707994
+                        },
+                        {
+                            "id": 60069,
+                            "title": "WALL\u00b7E",
+                            "year": 2008,
+                            "avg_rating": 4.2,
+                            "score": 0.852259694235652
+                        },
+                        {
+                            "id": 5952,
+                            "title": "The Lord of the Rings: The Two Towers",
+                            "year": 2002,
+                            "avg_rating": 4.1,
+                            "score": 0.8508040848719871
+                        },
+                        {
+                            "id": 1196,
+                            "title": "Star Wars: Episode V - The Empire Strikes Back",
+                            "year": 1980,
+                            "avg_rating": 4.1,
+                            "score": 0.8447433274112974
+                        },
+                        {
+                            "id": 4993,
+                            "title": "The Lord of the Rings: The Fellowship of the Ring",
+                            "year": 2001,
+                            "avg_rating": 4.1,
+                            "score": 0.8428367933408347
+                        },
+                        {
+                            "id": 260,
+                            "title": "Star Wars",
+                            "year": 1977,
+                            "avg_rating": 4.1,
+                            "score": 0.8324389947493953
+                        },
+                        {
+                            "id": 6377,
+                            "title": "Finding Nemo",
+                            "year": 2003,
+                            "avg_rating": 3.8,
+                            "score": 0.8290051312492518
+                        },
+                        {
+                            "id": 5618,
+                            "title": "Sen to Chihiro no kamikakushi",
+                            "year": 2001,
+                            "avg_rating": 4.1,
+                            "score": 0.8269567995967712
+                        },
+                        {
+                            "id": 2116,
+                            "title": "The Lord of the Rings: The Return of the King",
+                            "year": 2003,
+                            "avg_rating": 3.7,
+                            "score": 0.8269473379211696
+                        },
+                        {
+                            "id": 7153,
+                            "title": "The Lord of the Rings: The Return of the King",
+                            "year": 2003,
+                            "avg_rating": 3.7,
+                            "score": 0.8269473379211696
+                        }
+                    ]
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.674229,
+                            "end_time": 1781369678.6743376,
+                            "duration_s": 0.0001,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "candidate_selection.traditional",
+                            "step_class": "ALSGenerator",
+                            "start_time": 1781369678.674472,
+                            "end_time": 1781369678.6875021,
+                            "duration_s": 0.013,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "scoring.traditional",
+                            "step_class": "SimpleScorer",
+                            "start_time": 1781369678.6877568,
+                            "end_time": 1781369678.69114,
+                            "duration_s": 0.0034,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "ranking.traditional",
+                            "step_class": "SortRanker",
+                            "start_time": 1781369678.691352,
+                            "end_time": 1781369678.6925635,
+                            "duration_s": 0.0012,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.6927214,
+                            "end_time": 1781369678.701017,
+                            "duration_s": 0.0083,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        },
+        "9": {
+            "1": {
+                "query": "I like Animation movies. Suggest me some.",
+                "interaction_history": [],
+                "intent_type": "recommend",
+                "result": {
+                    "response": "Here are some movies you might like:\n\n1. WALL\u00b7E (2008)\n   Genres    : Adventure, Animation, Children, Comedy, Romance, Sci-Fi\n   Director  : Andrew Stanton\n   Audience  : 4.2/5  |  Critics: 8.4/10\n   IMDb      : https://www.imdb.com/title/tt0910970/\n\n2. Ratatouille (2007)\n   Genres    : Animation, Children, Comedy, Fantasy\n   Director  : Brad Bird\n   Audience  : 3.9/5  |  Critics: 8.4/10\n   IMDb      : https://www.imdb.com/title/tt0382932/\n\n3. Finding Nemo (2003)\n   Genres    : Adventure, Animation, Children, Comedy\n   Director  : Andrew Stanton\n   Audience  : 3.8/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0266543/\n\n4. Sen to Chihiro no kamikakushi (2001)\n   Genres    : Adventure, Animation, Children, Fantasy\n   Director  : Hayao Miyazaki\n   Audience  : 4.1/5  |  Critics: 8.5/10\n   IMDb      : https://www.imdb.com/title/tt0245429/\n\n5. The Lord of the Rings: The Return of the King (2003)\n   Genres    : Adventure, Animation, Children, Fantasy\n   Director  : Peter Jackson\n   Audience  : 3.7/5  |  Critics: 8.6/10\n   IMDb      : https://www.imdb.com/title/tt0167260/\n\n6. Hotaru no haka (1988)\n   Genres    : Animation, Drama, War\n   Director  : Isao Takahata\n   Audience  : 4.3/5  |  Critics: 8.9/10\n   IMDb      : https://www.imdb.com/title/tt0095327/\n\n7. The Simpsons Movie (2007)\n   Genres    : Animation, Comedy\n   Director  : David Silverman\n   Audience  : 3.7/5  |  Critics: 7.5/10\n   IMDb      : https://www.imdb.com/title/tt0462538/\n\n8. Toy Story (1995)\n   Genres    : Adventure, Animation, Children, Comedy, Fantasy\n   Director  : John Lasseter\n   Audience  : 3.7/5  |  Critics: 9.0/10\n   IMDb      : https://www.imdb.com/title/tt0114709/\n\n9. Toy story (1995)\n   Genres    : Adventure, Animation, Children, Comedy, Fantasy\n   Director  : John Lasseter\n   Audience  : 3.7/5  |  Critics: 9.0/10\n   IMDb      : https://www.imdb.com/title/tt0114709/\n\n10. Tonari no Totoro (1988)\n   Genres    : Animation, Children, Fantasy\n   Director  : Hayao Miyazaki\n   Audience  : 4.3/5  |  Critics: 8.1/10\n   IMDb      : https://www.imdb.com/title/tt0096283/",
+                    "recommended_items": [
+                        {
+                            "id": 60069,
+                            "title": "WALL\u00b7E",
+                            "year": 2008,
+                            "avg_rating": 4.2,
+                            "score": 0.852259694235652
+                        },
+                        {
+                            "id": 50872,
+                            "title": "Ratatouille",
+                            "year": 2007,
+                            "avg_rating": 3.9,
+                            "score": 0.8442665240014664
+                        },
+                        {
+                            "id": 6377,
+                            "title": "Finding Nemo",
+                            "year": 2003,
+                            "avg_rating": 3.8,
+                            "score": 0.8290051312492518
+                        },
+                        {
+                            "id": 5618,
+                            "title": "Sen to Chihiro no kamikakushi",
+                            "year": 2001,
+                            "avg_rating": 4.1,
+                            "score": 0.8269567995967712
+                        },
+                        {
+                            "id": 2116,
+                            "title": "The Lord of the Rings: The Return of the King",
+                            "year": 2003,
+                            "avg_rating": 3.7,
+                            "score": 0.8269473379211696
+                        },
+                        {
+                            "id": 5690,
+                            "title": "Hotaru no haka",
+                            "year": 1988,
+                            "avg_rating": 4.3,
+                            "score": 0.8264440341841806
+                        },
+                        {
+                            "id": 54272,
+                            "title": "The Simpsons Movie",
+                            "year": 2007,
+                            "avg_rating": 3.7,
+                            "score": 0.8240472662458953
+                        },
+                        {
+                            "id": 3114,
+                            "title": "Toy Story",
+                            "year": 1995,
+                            "avg_rating": 3.7,
+                            "score": 0.8178232728082893
+                        },
+                        {
+                            "id": 1,
+                            "title": "Toy story",
+                            "year": 1995,
+                            "avg_rating": 3.7,
+                            "score": 0.8178232728082893
+                        },
+                        {
+                            "id": 5971,
+                            "title": "Tonari no Totoro",
+                            "year": 1988,
+                            "avg_rating": 4.3,
+                            "score": 0.8130535913732502
+                        }
+                    ]
+                },
+                "run_log": {
+                    "steps": [
+                        {
+                            "step_name": "input_processing.rule_based",
+                            "step_class": "RuleBasedInputParser",
+                            "start_time": 1781369678.7099226,
+                            "end_time": 1781369678.710048,
+                            "duration_s": 0.0001,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "candidate_selection.traditional",
+                            "step_class": "ALSGenerator",
+                            "start_time": 1781369678.7102196,
+                            "end_time": 1781369678.7215035,
+                            "duration_s": 0.0113,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "scoring.traditional",
+                            "step_class": "SimpleScorer",
+                            "start_time": 1781369678.721739,
+                            "end_time": 1781369678.7247832,
+                            "duration_s": 0.003,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "ranking.traditional",
+                            "step_class": "SortRanker",
+                            "start_time": 1781369678.724941,
+                            "end_time": 1781369678.725991,
+                            "duration_s": 0.001,
+                            "agent_metrics": null
+                        },
+                        {
+                            "step_name": "response_generation.simple_response",
+                            "step_class": "OutputGenerator",
+                            "start_time": 1781369678.7261376,
+                            "end_time": 1781369678.733283,
+                            "duration_s": 0.0071,
+                            "agent_metrics": null
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

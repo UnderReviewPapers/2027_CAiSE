@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debugger Py: current file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}",
+            "console": "integratedTerminal",
+            "args": "${command:pickArgs}"
+        },
+        {
+            "name": "framework",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "framework.run",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": "--debug"
+        }
+    ]
+}

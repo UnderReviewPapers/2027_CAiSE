@@ -1,0 +1,679 @@
+[
+    {
+        "history": [],
+        "user_id": null,
+        "queries": [
+            "Toy Story is great, but maybe something with the same vibe for an older audience?"
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [],
+        "user_id": null,
+        "queries": [
+            "Toy Story is great, but I feel like I've aged out of it"
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [
+            {
+                "movieID": 2023,
+                "datetime": "2007-08-29 15:03:15",
+                "title": "The Godfather: Part III",
+                "rating": 4.0
+            },
+            {
+                "movieID": 3174,
+                "datetime": "2007-08-29 15:04:32",
+                "title": "Man on the Moon",
+                "rating": 3.5
+            },
+            {
+                "movieID": 2863,
+                "datetime": "2007-08-29 15:06:44",
+                "title": "A Hard Day's Night",
+                "rating": 4.0
+            },
+            {
+                "movieID": 2114,
+                "datetime": "2007-08-29 15:08:41",
+                "title": "The Outsiders",
+                "rating": 3.5
+            },
+            {
+                "movieID": 51662,
+                "datetime": "2007-08-29 15:17:16",
+                "title": "300",
+                "rating": 5.0
+            },
+            {
+                "movieID": 1367,
+                "datetime": "2007-08-29 15:18:20",
+                "title": "One Hundred and One Dalmatians",
+                "rating": 4.0
+            },
+            {
+                "movieID": 5418,
+                "datetime": "2007-08-29 15:25:58",
+                "title": "The Bourne Identity",
+                "rating": 5.0
+            },
+            {
+                "movieID": 8665,
+                "datetime": "2007-08-29 15:26:16",
+                "title": "The Bourne Supremacy",
+                "rating": 5.0
+            },
+            {
+                "movieID": 296,
+                "datetime": "2007-08-29 15:26:39",
+                "title": "Pulp Fiction",
+                "rating": 5.0
+            },
+            {
+                "movieID": 18,
+                "datetime": "2007-08-29 15:27:51",
+                "title": "Four Rooms",
+                "rating": 3.5
+            },
+            {
+                "movieID": 1729,
+                "datetime": "2007-08-29 15:27:54",
+                "title": "Jackie Brown",
+                "rating": 4.5
+            },
+            {
+                "movieID": 6874,
+                "datetime": "2007-08-29 15:28:02",
+                "title": "Kill Bill: Vol. 2",
+                "rating": 5.0
+            },
+            {
+                "movieID": 7438,
+                "datetime": "2007-08-29 15:28:05",
+                "title": "Kill Bill: Vol. 2",
+                "rating": 5.0
+            },
+            {
+                "movieID": 1089,
+                "datetime": "2007-08-29 15:28:08",
+                "title": "Reservoir Dogs",
+                "rating": 4.0
+            },
+            {
+                "movieID": 1210,
+                "datetime": "2007-08-29 15:29:13",
+                "title": "Star Wars: Episode VI - Return of the Jedi",
+                "rating": 4.0
+            },
+            {
+                "movieID": 4011,
+                "datetime": "2007-08-29 15:30:58",
+                "title": "Snatch.",
+                "rating": 5.0
+            },
+            {
+                "movieID": 38061,
+                "datetime": "2007-08-29 15:33:03",
+                "title": "Kiss Kiss Bang Bang",
+                "rating": 4.0
+            },
+            {
+                "movieID": 4262,
+                "datetime": "2007-08-29 15:33:37",
+                "title": "Scarface",
+                "rating": 4.0
+            },
+            {
+                "movieID": 49272,
+                "datetime": "2007-08-29 15:35:49",
+                "title": "Casino Royale",
+                "rating": 5.0
+            },
+            {
+                "movieID": 2571,
+                "datetime": "2007-08-29 15:37:00",
+                "title": "The Matrix",
+                "rating": 5.0
+            }
+        ],
+        "user_id": "728",
+        "queries": [
+            "Recommend me a movie"
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [
+            {
+                "movieID": 2792,
+                "datetime": "2008-10-28 20:18:07",
+                "title": "Airplane II: The Sequel",
+                "rating": 4.0
+            },
+            {
+                "movieID": 1021,
+                "datetime": "2008-10-28 20:19:23",
+                "title": "Angels in the Outfield",
+                "rating": 4.5
+            },
+            {
+                "movieID": 4214,
+                "datetime": "2008-10-28 20:19:46",
+                "title": "Revenge of the Nerds",
+                "rating": 4.0
+            },
+            {
+                "movieID": 7360,
+                "datetime": "2008-10-28 20:19:54",
+                "title": "Dawn of the Dead",
+                "rating": 5.0
+            },
+            {
+                "movieID": 4728,
+                "datetime": "2008-10-28 20:20:01",
+                "title": "Rat Race",
+                "rating": 4.0
+            },
+            {
+                "movieID": 58559,
+                "datetime": "2008-10-28 20:20:20",
+                "title": "The Dark Knight",
+                "rating": 5.0
+            },
+            {
+                "movieID": 2947,
+                "datetime": "2008-10-28 21:02:32",
+                "title": "Goldfinger",
+                "rating": 4.5
+            },
+            {
+                "movieID": 180,
+                "datetime": "2008-10-28 21:02:59",
+                "title": "Mallrats",
+                "rating": 4.5
+            },
+            {
+                "movieID": 1253,
+                "datetime": "2008-10-28 21:04:03",
+                "title": "The Day the Earth Stood Still",
+                "rating": 4.5
+            },
+            {
+                "movieID": 3697,
+                "datetime": "2008-10-28 21:04:56",
+                "title": "Predator",
+                "rating": 4.5
+            },
+            {
+                "movieID": 48385,
+                "datetime": "2008-10-28 21:05:43",
+                "title": "Borat: Cultural Learnings of America for Make Benefit Glorious Nation of Kazakhstan",
+                "rating": 5.0
+            },
+            {
+                "movieID": 6502,
+                "datetime": "2008-10-29 00:10:31",
+                "title": "28 Days Later...",
+                "rating": 5.0
+            },
+            {
+                "movieID": 54503,
+                "datetime": "2008-10-29 00:14:10",
+                "title": "Superbad",
+                "rating": 5.0
+            },
+            {
+                "movieID": 48774,
+                "datetime": "2008-10-29 00:14:38",
+                "title": "Children of Men",
+                "rating": 5.0
+            },
+            {
+                "movieID": 296,
+                "datetime": "2008-10-29 00:16:03",
+                "title": "Pulp Fiction",
+                "rating": 5.0
+            },
+            {
+                "movieID": 1089,
+                "datetime": "2008-10-29 00:16:42",
+                "title": "Reservoir Dogs",
+                "rating": 5.0
+            },
+            {
+                "movieID": 3671,
+                "datetime": "2008-10-29 00:20:47",
+                "title": "Blazing Saddles",
+                "rating": 5.0
+            },
+            {
+                "movieID": 2791,
+                "datetime": "2008-10-29 00:21:44",
+                "title": "Airplane!",
+                "rating": 5.0
+            },
+            {
+                "movieID": 3421,
+                "datetime": "2008-10-29 00:23:19",
+                "title": "Animal House",
+                "rating": 5.0
+            },
+            {
+                "movieID": 53000,
+                "datetime": "2008-10-29 00:25:22",
+                "title": "28 Weeks Later",
+                "rating": 5.0
+            }
+        ],
+        "user_id": "30849",
+        "queries": [
+            "Recommend me a movie"
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [
+            {
+                "movieID": 923,
+                "datetime": "2006-08-09 21:24:49",
+                "title": "Citizen Kane",
+                "rating": 4.0
+            },
+            {
+                "movieID": 920,
+                "datetime": "2006-08-09 21:24:58",
+                "title": "Gone with the Wind",
+                "rating": 5.0
+            },
+            {
+                "movieID": 1374,
+                "datetime": "2006-08-09 21:25:21",
+                "title": "Star Trek: The Wrath of Khan",
+                "rating": 5.0
+            },
+            {
+                "movieID": 908,
+                "datetime": "2006-08-09 21:25:36",
+                "title": "North by Northwest",
+                "rating": 4.0
+            },
+            {
+                "movieID": 2700,
+                "datetime": "2006-08-09 21:25:39",
+                "title": "South Park: Bigger Longer & Uncut",
+                "rating": 5.0
+            },
+            {
+                "movieID": 2640,
+                "datetime": "2006-08-09 21:25:42",
+                "title": "Superman",
+                "rating": 5.0
+            },
+            {
+                "movieID": 2406,
+                "datetime": "2006-08-09 21:26:00",
+                "title": "Romancing the Stone",
+                "rating": 5.0
+            },
+            {
+                "movieID": 904,
+                "datetime": "2006-08-09 21:26:16",
+                "title": "Rear Window",
+                "rating": 4.0
+            },
+            {
+                "movieID": 5349,
+                "datetime": "2006-08-09 21:26:37",
+                "title": "Spider-Man",
+                "rating": 5.0
+            },
+            {
+                "movieID": 1676,
+                "datetime": "2006-08-09 21:26:40",
+                "title": "Starship Troopers",
+                "rating": 5.0
+            },
+            {
+                "movieID": 168,
+                "datetime": "2006-08-09 21:27:09",
+                "title": "First Knight",
+                "rating": 4.0
+            },
+            {
+                "movieID": 1376,
+                "datetime": "2006-08-09 21:27:33",
+                "title": "Star Trek IV: The Voyage Home",
+                "rating": 4.0
+            },
+            {
+                "movieID": 2100,
+                "datetime": "2006-08-09 21:28:04",
+                "title": "Splash",
+                "rating": 5.0
+            },
+            {
+                "movieID": 2006,
+                "datetime": "2006-08-09 21:28:13",
+                "title": "The Mask of Zorro",
+                "rating": 5.0
+            },
+            {
+                "movieID": 46530,
+                "datetime": "2006-08-09 21:29:53",
+                "title": "Superman Returns",
+                "rating": 4.5
+            },
+            {
+                "movieID": 46970,
+                "datetime": "2006-08-09 21:30:27",
+                "title": "Talladega Nights: The Ballad of Ricky Bobby",
+                "rating": 4.5
+            },
+            {
+                "movieID": 45499,
+                "datetime": "2006-08-09 21:31:17",
+                "title": "X-Men: The Last Stand",
+                "rating": 4.5
+            },
+            {
+                "movieID": 2420,
+                "datetime": "2006-08-09 21:32:30",
+                "title": "The Karate Kid",
+                "rating": 5.0
+            },
+            {
+                "movieID": 7247,
+                "datetime": "2006-08-09 21:32:55",
+                "title": "Chitty Chitty Bang Bang",
+                "rating": 5.0
+            },
+            {
+                "movieID": 1129,
+                "datetime": "2006-08-09 21:33:01",
+                "title": "Escape from New York",
+                "rating": 5.0
+            }
+        ],
+        "user_id": "55124",
+        "queries": [
+            "Recommend me a movie"
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [
+            {
+                "movieID": 1517,
+                "datetime": "2006-04-09 10:06:51",
+                "title": "Austin Powers: International Man of Mystery",
+                "rating": 4.0
+            },
+            {
+                "movieID": 3996,
+                "datetime": "2006-04-09 10:07:02",
+                "title": "Wo hu cang long",
+                "rating": 4.0
+            },
+            {
+                "movieID": 2012,
+                "datetime": "2006-04-09 10:08:02",
+                "title": "Back to the Future Part III",
+                "rating": 3.5
+            },
+            {
+                "movieID": 2174,
+                "datetime": "2006-04-09 10:08:04",
+                "title": "Beetle Juice",
+                "rating": 3.5
+            },
+            {
+                "movieID": 1080,
+                "datetime": "2006-04-09 10:08:27",
+                "title": "Life of Brian",
+                "rating": 4.5
+            },
+            {
+                "movieID": 2011,
+                "datetime": "2006-04-09 10:08:37",
+                "title": "Back to the Future Part II",
+                "rating": 3.5
+            },
+            {
+                "movieID": 420,
+                "datetime": "2006-04-09 10:08:40",
+                "title": "Beverly Hills Cop III",
+                "rating": 3.5
+            },
+            {
+                "movieID": 497,
+                "datetime": "2006-04-09 10:08:53",
+                "title": "Much Ado About Nothing",
+                "rating": 3.5
+            },
+            {
+                "movieID": 318,
+                "datetime": "2006-04-09 10:10:40",
+                "title": "The Shawshank Redemption",
+                "rating": 5.0
+            },
+            {
+                "movieID": 745,
+                "datetime": "2006-04-09 10:10:59",
+                "title": "Wallace and Gromit in A Close Shave",
+                "rating": 4.5
+            },
+            {
+                "movieID": 1148,
+                "datetime": "2006-04-09 10:11:01",
+                "title": "Wallace & Gromit in The Wrong Trousers",
+                "rating": 4.5
+            },
+            {
+                "movieID": 4973,
+                "datetime": "2006-04-09 10:11:08",
+                "title": "Le fabuleux destin d'Am\u00e9lie Poulain",
+                "rating": 4.5
+            },
+            {
+                "movieID": 1270,
+                "datetime": "2006-04-09 10:11:49",
+                "title": "Back to the Future",
+                "rating": 3.5
+            },
+            {
+                "movieID": 4085,
+                "datetime": "2006-04-09 10:11:56",
+                "title": "Beverly Hills Cop",
+                "rating": 3.5
+            },
+            {
+                "movieID": 2716,
+                "datetime": "2006-04-09 10:12:06",
+                "title": "Ghost Busters",
+                "rating": 3.5
+            },
+            {
+                "movieID": 1291,
+                "datetime": "2006-04-09 10:13:04",
+                "title": "Indiana Jones and the Last Crusade",
+                "rating": 4.0
+            },
+            {
+                "movieID": 2115,
+                "datetime": "2006-04-09 10:13:14",
+                "title": "Indiana Jones and the Temple of Doom",
+                "rating": 3.5
+            },
+            {
+                "movieID": 589,
+                "datetime": "2006-04-09 10:13:21",
+                "title": "Terminator 2: Judgment Day",
+                "rating": 4.0
+            },
+            {
+                "movieID": 3868,
+                "datetime": "2006-04-09 10:13:35",
+                "title": "The Naked Gun: From the Files of Police Squad!",
+                "rating": 4.0
+            },
+            {
+                "movieID": 1240,
+                "datetime": "2006-04-09 10:14:19",
+                "title": "Terminator Salvation",
+                "rating": 4.0
+            }
+        ],
+        "user_id": "31088",
+        "queries": [
+            "Recommend me a movie"
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [
+            {
+                "movieID": 6218,
+                "datetime": "2007-05-06 03:38:14",
+                "title": "Bend It Like Beckham",
+                "rating": 4.0
+            },
+            {
+                "movieID": 3264,
+                "datetime": "2007-05-06 03:39:05",
+                "title": "Buffy the Vampire Slayer",
+                "rating": 4.0
+            },
+            {
+                "movieID": 40815,
+                "datetime": "2007-05-06 03:39:24",
+                "title": "Harry Potter and the Goblet of Fire",
+                "rating": 3.5
+            },
+            {
+                "movieID": 358,
+                "datetime": "2007-05-06 03:40:23",
+                "title": "Higher Learning",
+                "rating": 5.0
+            },
+            {
+                "movieID": 45499,
+                "datetime": "2007-05-06 03:40:45",
+                "title": "X-Men: The Last Stand",
+                "rating": 3.5
+            },
+            {
+                "movieID": 1734,
+                "datetime": "2007-05-06 03:41:12",
+                "title": "Ma vie en rose",
+                "rating": 5.0
+            },
+            {
+                "movieID": 48394,
+                "datetime": "2007-05-06 03:42:28",
+                "title": "El laberinto del fauno",
+                "rating": 4.5
+            },
+            {
+                "movieID": 3930,
+                "datetime": "2007-05-06 03:42:50",
+                "title": "Creature from the Black Lagoon",
+                "rating": 3.5
+            },
+            {
+                "movieID": 2958,
+                "datetime": "2007-05-06 03:53:14",
+                "title": "Naturally Native",
+                "rating": 4.5
+            },
+            {
+                "movieID": 4878,
+                "datetime": "2007-05-06 03:58:09",
+                "title": "Donnie Darko",
+                "rating": 5.0
+            },
+            {
+                "movieID": 30991,
+                "datetime": "2007-05-06 03:58:26",
+                "title": "Powwow Highway",
+                "rating": 5.0
+            },
+            {
+                "movieID": 1914,
+                "datetime": "2007-05-06 03:58:43",
+                "title": "Smoke Signals",
+                "rating": 3.5
+            },
+            {
+                "movieID": 6647,
+                "datetime": "2007-05-06 03:59:01",
+                "title": "The Business of Fancydancing",
+                "rating": 4.5
+            },
+            {
+                "movieID": 44191,
+                "datetime": "2007-05-06 03:59:42",
+                "title": "V for Vendetta",
+                "rating": 4.0
+            },
+            {
+                "movieID": 17,
+                "datetime": "2007-05-06 04:00:07",
+                "title": "Sense and Sensibility",
+                "rating": 3.5
+            },
+            {
+                "movieID": 235,
+                "datetime": "2007-05-06 04:00:42",
+                "title": "Ed Wood",
+                "rating": 4.5
+            },
+            {
+                "movieID": 1967,
+                "datetime": "2007-05-06 04:01:00",
+                "title": "Labyrinth",
+                "rating": 4.0
+            },
+            {
+                "movieID": 5669,
+                "datetime": "2007-05-06 04:02:36",
+                "title": "Bowling for Columbine",
+                "rating": 3.5
+            },
+            {
+                "movieID": 5791,
+                "datetime": "2007-05-06 04:02:40",
+                "title": "Frida",
+                "rating": 3.5
+            },
+            {
+                "movieID": 2291,
+                "datetime": "2007-05-06 04:03:01",
+                "title": "Edward Scissorhands",
+                "rating": 3.5
+            }
+        ],
+        "user_id": "45642",
+        "queries": [
+            "Recommend me a movie"
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [],
+        "user_id": null,
+        "queries": [
+            "I like Adventure movies. Suggest me some."
+        ],
+        "type": "recommend"
+    },
+    {
+        "history": [],
+        "user_id": null,
+        "queries": [
+            "I like Animation movies. Suggest me some."
+        ],
+        "type": "recommend"
+    }
+]

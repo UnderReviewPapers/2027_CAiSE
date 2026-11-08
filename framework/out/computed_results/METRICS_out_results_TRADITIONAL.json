@@ -1,0 +1,502 @@
+{
+  "step_avg_time_seconds": {
+    "input_processing.rule_based": 0.00015555555555555556,
+    "response_generation.simple_response": 0.005811111111111111,
+    "candidate_selection.traditional": 0.006928571428571429,
+    "scoring.traditional": 0.003085714285714286,
+    "ranking.traditional": 0.001157142857142857
+  },
+  "step_token_costs": {},
+  "engagement_scores": {
+    "per_query": [
+      {
+        "id": "1.1",
+        "score": 0.0
+      },
+      {
+        "id": "2.1",
+        "score": 0.0
+      },
+      {
+        "id": "3.1",
+        "score": 0.2
+      },
+      {
+        "id": "4.1",
+        "score": 0.2
+      },
+      {
+        "id": "5.1",
+        "score": 0.2
+      },
+      {
+        "id": "6.1",
+        "score": 0.2
+      },
+      {
+        "id": "7.1",
+        "score": 0.2
+      },
+      {
+        "id": "8.1",
+        "score": 0.4
+      },
+      {
+        "id": "9.1",
+        "score": 0.2
+      },
+      {
+        "id": "10.1",
+        "score": 0.2
+      },
+      {
+        "id": "11.1",
+        "score": 0.2
+      },
+      {
+        "id": "12.1",
+        "score": 0.0
+      },
+      {
+        "id": "13.1",
+        "score": 0.0
+      }
+    ],
+    "avg": 0.15384615384615385
+  },
+  "task_handling_flexibility": {
+    "per_query": [
+      {
+        "id": "1.1",
+        "score": 0.0
+      },
+      {
+        "id": "2.1",
+        "score": 0.0
+      },
+      {
+        "id": "3.1",
+        "score": 1.0
+      },
+      {
+        "id": "4.1",
+        "score": 1.0
+      },
+      {
+        "id": "5.1",
+        "score": 1.0
+      },
+      {
+        "id": "6.1",
+        "score": 1.0
+      },
+      {
+        "id": "7.1",
+        "score": 1.0
+      },
+      {
+        "id": "8.1",
+        "score": 1.0
+      },
+      {
+        "id": "9.1",
+        "score": 1.0
+      },
+      {
+        "id": "10.1",
+        "score": 1.0
+      },
+      {
+        "id": "11.1",
+        "score": 1.0
+      },
+      {
+        "id": "12.1",
+        "score": 0.0
+      },
+      {
+        "id": "13.1",
+        "score": 0.0
+      }
+    ],
+    "avg": 0.6923076923076923
+  },
+  "reliability": [
+    {
+      "query": "Toy Story is great, but maybe something with the same vibe for an older audience?",
+      "reliability": 0.0,
+      "reason": "The assistant did not provide any recommendations and instead asked for clarification, offering no alignment with the user's request for movies similar to Toy Story for an older audience. This fails to meet the relevance criteria."
+    },
+    {
+      "query": "Toy Story is great, but I feel like I've aged out of it",
+      "reliability": 0.0,
+      "reason": "The response does not provide any recommendations and fails to address the user's expressed desire for more age‑appropriate content, offering only an apology and request for clarification, which is completely misaligned with the user's profile."
+    },
+    {
+      "query": "Recommend me a movie",
+      "reliability": 0.8,
+      "reason": "The recommendations largely match the user's demonstrated taste for drama, crime, and thriller titles (e.g., Fight Club, The Godfather, Silence of the Lambs) and include a few comedy‑drama picks like Forrest Gump, which align with their history. The only notable mismatch is the three Lord of the Rings entries, which are fantasy and not reflected in the user's past preferences. Overall, most suggestions are relevant, earning a high but not perfect score."
+    },
+    {
+      "query": "Recommend me a movie",
+      "reliability": 1.0,
+      "reason": "The list covers the user’s dominant genres—action, comedy, crime, thriller, horror, sci‑fi, and drama—mirroring the varied high‑rated titles in their viewing history. Most recommendations (e.g., Hot Fuzz, No Country for Old Men, Grindhouse, I Am Legend) directly match those preferences, and even the drama‑only picks (There Will Be Blood, Juno) still fit the user’s interest in strong narratives. Overall the suggestions are well aligned with the user’s profile."
+    },
+    {
+      "query": "Recommend me a movie",
+      "reliability": 0.8,
+      "reason": "The recommendations heavily feature sci‑fi/action titles (multiple Star Trek films, Superman II, Batman Returns) that match the user's strong history of enjoying Star Trek, Superman, and other action/adventure movies. Several picks (The Goonies, Young Frankenstein) also fit the user's interest in adventure and comedy. Only a few items (Grease, The Little Mermaid) stray toward musical/animation, which are less evident in the user's preferences, but the majority are well‑aligned, warranting a high score."
+    },
+    {
+      "query": "Recommend me a movie",
+      "reliability": 0.8,
+      "reason": "The recommendations largely match the user's demonstrated tastes for action, adventure, sci‑fi, fantasy and drama (e.g., LOTR, The Matrix, Star Wars, American Beauty). While a few titles such as Pulp Fiction and Silence of the Lambs lean toward crime/horror, they still share genre elements (crime, thriller) present in the user's history. Overall, most items are well‑aligned with the user's preferences, though the list could include more overt comedies."
+    },
+    {
+      "query": "Recommend me a movie",
+      "reliability": 0.6,
+      "reason": "The list contains several titles that match the user's demonstrated tastes—e.g., Amélie, Eternal Sunshine, Shawshank Redemption, and LOTR reflect the user's interest in drama, comedy, romance, fantasy and sci‑fi. However, many recommendations (Pulp Fiction, Fight Club, Memento, American History X) focus on crime and thriller elements that are not prominent in the viewing history, making the set only partially aligned with the user's profile."
+    },
+    {
+      "query": "I like Adventure movies. Suggest me some.",
+      "reliability": 1.0,
+      "reason": "All ten recommended titles include the Adventure genre, directly matching the user's expressed preference. The list also provides a diverse yet relevant mix (action‑adventure, animated adventure, fantasy adventure, sci‑fi adventure) without any unrelated genres, demonstrating strong alignment with the user's request."
+    },
+    {
+      "query": "I like Animation movies. Suggest me some.",
+      "reliability": 0.8,
+      "reason": "The list primarily contains animation titles, matching the user's stated preference, and many align with the viewing history. However, one entry (The Lord of the Rings: The Return of the King) is not an animation and there is a duplicate Toy Story entry, which detracts from perfect relevance."
+    }
+  ],
+  "hallucinations": [
+    {
+      "query_id": "1.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "1.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "2.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "2.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "3.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "3.1",
+      "step_name": "candidate_selection.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "3.1",
+      "step_name": "scoring.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "3.1",
+      "step_name": "ranking.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "3.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "4.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "4.1",
+      "step_name": "candidate_selection.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "4.1",
+      "step_name": "scoring.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "4.1",
+      "step_name": "ranking.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "4.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "5.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "5.1",
+      "step_name": "candidate_selection.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "5.1",
+      "step_name": "scoring.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "5.1",
+      "step_name": "ranking.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "5.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "6.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "6.1",
+      "step_name": "candidate_selection.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "6.1",
+      "step_name": "scoring.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "6.1",
+      "step_name": "ranking.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "6.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "7.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "7.1",
+      "step_name": "candidate_selection.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "7.1",
+      "step_name": "scoring.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "7.1",
+      "step_name": "ranking.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "7.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "8.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "8.1",
+      "step_name": "candidate_selection.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "8.1",
+      "step_name": "scoring.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "8.1",
+      "step_name": "ranking.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "8.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "9.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "9.1",
+      "step_name": "candidate_selection.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "9.1",
+      "step_name": "scoring.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "9.1",
+      "step_name": "ranking.traditional",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "9.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "10.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "10.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "11.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "11.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "12.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "12.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "13.1",
+      "step_name": "input_processing.rule_based",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    },
+    {
+      "query_id": "13.1",
+      "step_name": "response_generation.simple_response",
+      "num_remapped": 0,
+      "num_not_matched": 0,
+      "num_duplicates": 0
+    }
+  ]
+}
