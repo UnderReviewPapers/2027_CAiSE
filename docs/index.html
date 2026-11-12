@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recommender Design Demo</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brandmark" aria-hidden="true">R·</div>
+      <div>
+        <div class="brandtitle">Recommending the <span>Recommender</span></div>
+        <div class="brandsub">Model-based design methodology for recommender systems — interactive demo</div>
+      </div>
+    </div>
+    <nav id="stepper" class="stepper" aria-label="Steps"></nav>
+  </header>
+
+  <main id="view" class="container" aria-live="polite"></main>
+
+  <footer class="footer container">
+    Estimates are the designer's initial values used in the paper (movie context). Illustrative demo, not a validated tool.
+  </footer>
+
+  <!-- Plain scripts (no modules) so the page also works when opened from the file system. -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
