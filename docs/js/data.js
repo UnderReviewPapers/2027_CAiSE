@@ -333,11 +333,24 @@ const QUESTIONS = [
 ];
 
 // ---------- Scenario presets (Section "Motivating Scenarios") ----------
+// Context of a design (paper: the Context identifies the application domain).
+// These fields describe the application; they do not influence the comparison.
+const CONTEXT_FIELDS = [
+  { id: 'project', label: 'Project name', placeholder: 'e.g. Movie assistant' },
+  { id: 'domain',  label: 'Application domain', placeholder: 'e.g. Movies, healthcare, e-commerce' },
+  { id: 'items',   label: 'Recommended items', placeholder: 'e.g. Movies from the HetRec catalogue' },
+  { id: 'users',   label: 'Target users', placeholder: 'e.g. Subscribers of a streaming platform' },
+  { id: 'description', label: 'Description', placeholder: 'What the recommender system is for', long: true },
+  { id: 'example', label: 'Example request', placeholder: 'A typical request the system must handle', long: true }
+];
+
 const SCENARIOS = {
   movie: {
     name: 'Movie recommendation',
     description: 'A streaming platform provides a conversational assistant that helps users discover movies.',
     example: 'Toy Story is great, but maybe something with the same vibe for an older audience?',
+    context: { project: 'Movie assistant', domain: 'Movies', items: 'Movies from the HetRec catalogue',
+               users: 'Subscribers of a streaming platform' },
     answers: { interaction: 'unconstrained', consequence: 'limited', histories: 'part', catalogue: 'preferred',
                infra: 'slm', external: 'yes', time: 'yes', cost: 'yes' }
   },
@@ -345,6 +358,8 @@ const SCENARIOS = {
     name: 'Healthcare recommendation',
     description: 'A healthcare organisation provides a conversational assistant that recommends educational resources to patients.',
     example: 'I was recently diagnosed with type 2 diabetes. Can you recommend a reliable, easy-to-understand guide about healthy eating and physical activity?',
+    context: { project: 'Patient education assistant', domain: 'Healthcare', items: 'Educational resources validated by the organisation',
+               users: 'Patients of the healthcare organisation' },
     answers: { interaction: 'freeform', consequence: 'serious', histories: 'part', catalogue: 'mandatory',
                infra: 'slm', external: 'no', time: 'limited', cost: 'limited' }
   }
