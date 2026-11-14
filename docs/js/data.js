@@ -128,6 +128,7 @@ const PROVENANCE = {
 // Stage-specific part of each alternative.
 //   technique / component / capabilities: by execution style (traditional | direct | agentic)
 //   requiredResources: further required resources by execution style
+//   params: default parameters of the framework component, by execution style
 //   est: Expected Performance levels, ordered as VARIANTS
 //        [traditional, slm-direct, llm-direct, llm-agentic]
 const STAGE_ALTERNATIVES = {
@@ -164,7 +165,8 @@ const STAGE_ALTERNATIVES = {
     // ALS with attribute filtering falls back on the filter for users without a history,
     // so it does not require interaction histories (pure ALS would).
     requiredResources: { traditional: ['attributes'], agentic: ['attributes'] },
-    params: { n_candidates: 20 },
+    // Default parameters by execution style (the traditional generator has none).
+    params: { direct: { n_candidates: 20 }, agentic: { n_candidates: 20 } },
     est: {
       intent:    ['VL', 'M',  'H', 'VH'],
       accuracy:  ['VH', 'L',  'M', 'H'],
@@ -213,7 +215,7 @@ const STAGE_ALTERNATIVES = {
     component: { traditional: 'ranker.traditional', direct: 'ranker.llm', agentic: 'ranker.agent' },
     capabilities: { traditional: [], direct: [], agentic: ['catalogue_access'] },
     requiredResources: { agentic: ['attributes'] },
-    params: { top_k: 10 },
+    params: { traditional: { top_k: 10 }, direct: { top_k: 10 }, agentic: { top_k: 10 } },
     est: {
       intent:    ['L',  'M', 'M', 'M'],
       accuracy:  ['VH', 'L', 'L', 'L'],
@@ -259,6 +261,16 @@ const CAPABILITIES = {
   freeform: 'Free-form request interpretation',
   catalogue_access: 'Catalogue access (tools)',
   explanations: 'Natural-language explanations'
+};
+
+// ---------- Framework configuration file ----------
+// Fixed parts of the file read by the framework (framework/config/schema.yaml).
+// The orchestrator answers information requests and fallbacks with the selected response generator.
+const FRAMEWORK_CONFIG = {
+  fileName: 'schema.yaml',
+  state: 'state.simple',
+  userModel: 'user_model.simple',
+  orchestrator: 'orchestrator.sequential_traditional_fb'
 };
 
 // ---------- Questions (Scenario characterisation) ----------
@@ -404,7 +416,12 @@ const SCENARIOS = {
                users: 'Subscribers of a streaming platform' },
     answers: { interaction: 'unconstrained', presentation: 'engaging', impact: 'limited', catalogue: 'preferably',
                histories: 'part', catalogue_info: 'ratings', infra: 'slm', sensitive: 'none',
-               speed: 'longer', max_time: 'no', budget: 'flexible' }
+               speed: 'longer', max_time: 'no', budget: 'flexible' },
+    // Configuration selection of the paper: the designer follows the ranking except for scoring.
+    selections: { scoring: 'llm-direct-external' },
+    rationale: {
+      scoring: 'Popularity ignores the request; agentic access adds time and cost without new information.'
+    }
   },
   healthcare: {
     name: 'Healthcare recommendation',

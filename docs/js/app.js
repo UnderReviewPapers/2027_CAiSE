@@ -25,7 +25,9 @@ const state = {
   selections: {},                     // stageId -> alternative kind chosen by the designer
   models: {},                         // stageId -> language model id chosen by the designer
   params: {},                         // stageId -> { parameter: value } set by the designer
-  inspect: null,                      // alternative comparison: { stage, variant } whose score is shown
+  rationale: {},                      // stageId -> designer's rationale for the choice
+  showYaml: false,                    // configuration selection: configuration file shown
+  inspect: null,                    // alternative comparison: { stage, variant } whose score is shown
   exploreStage: 'input',              // design-space page: selected stage
   exploreAlt: 'llm-agentic-external'  // design-space page: selected alternative
 };
@@ -59,7 +61,7 @@ function getAlternative(stageId, kind) {
     component: st.component[style],
     capabilities: st.capabilities[style] || [],
     requiredResources: [...base.requiredResources, ...((st.requiredResources || {})[style] || [])],
-    params: st.params || {},
+    params: (st.params || {})[style] || {},
     performance,
     provenance: PROVENANCE
   };
@@ -155,7 +157,9 @@ const deploymentChips = alts => alts.map(a => chip(DIMENSIONS.deployment.values[
 function selectedModel(stageId, alt) {
   return alt.models.find(m => m.id === state.models[stageId]) || alt.model;
 }
-const selectedParams = (stageId, alt) => ({ ...alt.params, ...(state.params[stageId] || {}) });
+// Only the parameters of the selected alternative are kept (values set for another alternative are ignored).
+const selectedParams = (stageId, alt) =>
+  Object.fromEntries(Object.entries(alt.params).map(([k, v]) => [k, (state.params[stageId] || {})[k] ?? v]));
 
 // =====================================================================
 // Actions
@@ -168,13 +172,15 @@ function loadScenario(id) {
   state.context = { ...sc.context, description: sc.description, example: sc.example };
   state.answers = { ...sc.answers };
   resetDesign();
+  Object.assign(state.selections, sc.selections || {});
+  Object.assign(state.rationale, sc.rationale || {});
   goTo('config');
 }
 
 function startNew() { state.scenario = null; state.context = {}; state.answers = {}; resetDesign(); goTo('config'); }
 
 // Forget the designer's choices of a previous configuration.
-function resetDesign() { state.selections = {}; state.models = {}; state.params = {}; state.inspect = null; }
+function resetDesign() { state.selections = {}; state.models = {}; state.params = {}; state.rationale = {}; state.inspect = null; }
 
 // =====================================================================
 // Rendering
@@ -485,7 +491,6 @@ function identificationSection() {
     const tip = altLabel(r.alt) + (r.feasible ? ' · feasible' : ' · excluded: ' + r.reasons.join('; '));
     return `<td class="ef ${r.feasible ? 'st-feasible' : 'st-excluded'}" title="${esc(tip)}">${r.feasible ? '✓' : '✗'}</td>`;
   };
-  const excluded = identified.filter(({ rows }) => rows.some(r => !r.feasible));
   return `
   ${activityHead(3, 'Alternative identification', `Each alternative is <span class="lg st-feasible">✓ feasible</span> or
     <span class="lg st-excluded">✗ excluded</span> if it violates a hard constraint. Hover a cell for the reason.`)}
@@ -498,16 +503,6 @@ function identificationSection() {
           ${VARIANTS.map(v => cell(rows.find(r => r.alt.kind === `${v}-${d}`))).join('')}
         </tr>`).join('')}</tbody>`).join('')}
     </table></div>
-    ${excluded.length ? `<details class="excluded"><summary>Excluded alternatives and violated constraints</summary>
-      <div class="excluded-grid">${excluded.map(({ stage, rows }) => `<div><div class="label">${stage.name}</div><ul>${rows.filter(r => !r.feasible).map(r =>
-        // one violated constraint: on the same line as the alternative; several: one per line below it
-        r.reasons.length === 1
-          ? `<li class="inline"><span>${altLabel(r.alt)}</span> <span class="muted">${esc(r.reasons[0])}</span></li>`
-          : `<li><span>${altLabel(r.alt)}</span>${r.reasons.map(x => `<span class="muted">${esc(x)}</span>`).join('')}</li>`).join('')}</ul></div>`).join('')}
-      </div>
-    </details>` : ''}
-    <p class="small muted">Columns are alternative families. Their characteristics and expected performance are shown in the
-       <a href="#" data-action="goto" data-page="space">design space</a>.</p>
     ${todo('Several implementations per family (e.g. collaborative filtering, content-based retrieval for traditional candidate selection).')}
   </div>`;
 }
@@ -575,19 +570,25 @@ function scoreDetail(stage, row, req) {
 }
 
 // ---------- Activity 5: Configuration selection ----------
-function selectionSection() {
+// The configuration: for each stage, its ranked feasible alternatives and the selected one.
+function currentConfiguration() {
   const req = deriveRequirements(state.answers);
-  const rows = STAGES.map(s => {
+  return STAGES.map(s => {
     const ranked = compareStage(s.id, req);
     return { stage: s, ranked, sel: selectedRow(s.id, ranked) };
   });
+}
+
+function selectionSection() {
+  const req = deriveRequirements(state.answers);
+  const rows = currentConfiguration();
   return `
   ${activityHead(5, 'Configuration selection', 'For each stage, the designer selects one feasible alternative (by default the best ranked), its language model and its parameters. Constraints on the complete pipeline are checked on the resulting configuration.')}
   <div class="card">
     <div class="table-wrap"><table class="alts selection">
-      <thead><tr><th>Stage</th><th>Alternative</th><th>Deployment</th><th>Language model</th><th>Parameters</th></tr></thead>
+      <thead><tr><th>Stage</th><th>Alternative</th><th>Deployment</th><th>Language model</th><th>Parameters</th><th>Rationale</th></tr></thead>
       <tbody>${rows.map(({ stage, ranked, sel }) => {
-        if (!sel) return `<tr><th>${stage.name}</th><td colspan="4" class="warn-text">No feasible alternative</td></tr>`;
+        if (!sel) return `<tr><th>${stage.name}</th><td colspan="5" class="warn-text">No feasible alternative</td></tr>`;
         const alt = sel.alt, model = selectedModel(stage.id, alt), params = selectedParams(stage.id, alt);
         return `<tr><th>${stage.name}</th>
           <td><select data-action="select" data-stage="${stage.id}">${ranked.map(r =>
@@ -601,23 +602,76 @@ function selectionSection() {
               <div><code class="small">${model.id}</code></div>` : '<span class="muted">—</span>'}</td>
           <td>${Object.keys(params).length ? Object.entries(params).map(([k, v]) => `
               <label class="param"><code>${k}</code><input type="number" min="1" value="${v}" data-action="param" data-stage="${stage.id}" name="${k}"></label>`).join('')
-              : '<span class="muted">—</span>'}</td></tr>`;
+              : '<span class="muted">—</span>'}</td>
+          <td><textarea class="rationale-input" rows="2" data-action="rationale" data-stage="${stage.id}"
+                placeholder="${sel.rank === null || sel.rank === 1 ? 'Follows the ranking' : 'Why is it preferred to the best ranked?'}">${esc(state.rationale[stage.id] || '')}</textarea></td></tr>`;
       }).join('')}</tbody>
     </table></div>
 
     <div class="label">Constraints on the complete pipeline</div>
     ${pipelineConstraints(req)}
-    ${todo('Rationale for each choice.')}
     <div class="actions end">
-      <button class="btn" data-action="yaml">Generate YAML configuration file</button>
-      <button class="btn primary" data-action="goto" data-page="monitor"><span class="activity-num">6</span> Go to monitoring →</button>
+      <button class="btn" data-action="yaml">${state.showYaml ? 'Hide' : 'Generate'} YAML configuration file</button>
+      <button class="btn primary with-num" data-action="goto" data-page="monitor"><span class="activity-num">6</span> Go to monitoring →</button>
     </div>
-    <div id="yaml-panel"></div>
+    <div id="yaml-panel">${state.showYaml ? yamlPanel(rows) : ''}</div>
   </div>`;
 }
 
 // Pipeline-level constraints (e.g. maximum response time) are checked on the complete configuration.
 // With qualitative estimates the pipeline value cannot be computed: they are verified on measured values.
+// ---------- Configuration file (YAML read by the framework) ----------
+// Steps and parameters follow framework/config/schema.yaml. Deployment and rationale are not read
+// by the framework, so they are kept as comments, together with the context.
+function yamlText(rows) {
+  const q = v => JSON.stringify(String(v));                      // quoted YAML string
+  const oneLine = v => String(v).replace(/\s+/g, ' ').trim();     // safe inside a comment
+  const ctx = CONTEXT_FIELDS.filter(f => !f.long && state.context[f.id]);
+  const response = rows.find(r => r.stage.id === 'response').sel.alt.component;
+  const lines = [
+    '# Recommender pipeline configuration, generated by the Recommender Design Demo.',
+    ...ctx.map(f => `# ${f.label}: ${oneLine(state.context[f.id])}`),
+    '',
+    'state:', `  class: ${FRAMEWORK_CONFIG.state}`, '',
+    'user_model:', `  class: ${FRAMEWORK_CONFIG.userModel}`, '',
+    'orchestrator:', `  name: ${FRAMEWORK_CONFIG.orchestrator}`, '  params:',
+    `    ask_info_step: ${q(response)}`, `    fallback_step: ${q(response)}`, '',
+    'steps:'
+  ];
+  for (const { stage, sel } of rows) {
+    const alt = sel.alt, model = selectedModel(stage.id, alt), params = selectedParams(stage.id, alt);
+    const why = state.rationale[stage.id] || (sel.rank === null || sel.rank === 1 ? 'Follows the ranking' : '');
+    lines.push(`  # ${stage.name}: ${altLabel(alt)}${why ? ' - ' + oneLine(why) : ''}`);
+    lines.push(`  - name: ${alt.component}`);
+    const p = { ...(model ? { model: model.id } : {}), ...params };
+    if (Object.keys(p).length) {
+      lines.push('    params:');
+      for (const [k, v] of Object.entries(p)) lines.push(`      ${k}: ${typeof v === 'number' ? v : q(v)}`);
+    }
+  }
+  return lines.join('\n') + '\n';
+}
+
+function yamlPanel(rows) {
+  if (rows.some(r => !r.sel)) return '<p class="warn-text">Every stage needs a feasible alternative before the configuration file can be generated.</p>';
+  return `
+  <div class="yaml-box">
+    <div class="yaml-head"><span class="fact-label">${FRAMEWORK_CONFIG.fileName}</span>
+      <span class="actions"><button class="btn" data-action="copy-yaml">Copy</button>
+      <button class="btn" data-action="download-yaml">Download</button></span></div>
+    <pre><code>${esc(yamlText(rows))}</code></pre>
+  </div>`;
+}
+
+function downloadYaml() {
+  const blob = new Blob([yamlText(currentConfiguration())], { type: 'text/yaml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = FRAMEWORK_CONFIG.fileName;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function pipelineConstraints(req) {
   const list = req.constraints.filter(isPipelineConstraint);
   if (!list.length) return '<p class="muted small">None</p>';
@@ -664,13 +718,27 @@ document.addEventListener('click', e => {
     const detail = $('#comparison .score-detail');
     if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  else if (a === 'yaml') $('#yaml-panel').innerHTML = todo('Generate and download the YAML file in the format of framework/config/schema.yaml.');
+  else if (a === 'yaml') { state.showYaml = !state.showYaml; $('#selection').innerHTML = selectionSection(); }
+  else if (a === 'download-yaml') downloadYaml();
+  else if (a === 'copy-yaml') {
+    navigator.clipboard.writeText(yamlText(currentConfiguration()))
+      .then(() => { el.textContent = 'Copied'; setTimeout(() => { el.textContent = 'Copy'; }, 1500); })
+      .catch(() => { el.textContent = 'Copy failed'; });
+  }
 });
 
 // Answers and selections update only the affected sections, so the page keeps its scroll position.
 // Context fields only update the state (nothing else depends on them yet).
 document.addEventListener('input', e => {
-  if (e.target.dataset.action === 'context') state.context[e.target.name] = e.target.value;
+  const a = e.target.dataset.action;
+  if (a === 'context') state.context[e.target.name] = e.target.value;
+  if (a === 'rationale') state.rationale[e.target.dataset.stage] = e.target.value;
+  if (a === 'param') {
+    const st = state.params[e.target.dataset.stage] = state.params[e.target.dataset.stage] || {};
+    st[e.target.name] = Number(e.target.value);
+  }
+  // Keep the configuration file in sync without re-rendering the field being edited.
+  if ((a === 'rationale' || a === 'param') && state.showYaml) $('#yaml-panel').innerHTML = yamlPanel(currentConfiguration());
 });
 
 document.addEventListener('change', e => {
@@ -696,9 +764,6 @@ document.addEventListener('change', e => {
   } else if (a === 'model') {
     state.models[e.target.dataset.stage] = e.target.value;
     $('#selection').innerHTML = selectionSection();
-  } else if (a === 'param') {
-    const st = state.params[e.target.dataset.stage] = state.params[e.target.dataset.stage] || {};
-    st[e.target.name] = Number(e.target.value);
   }
 });
 

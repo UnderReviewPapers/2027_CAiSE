@@ -103,11 +103,6 @@ p { margin: .4rem 0; color: var(--text); }
 .rank { font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
 .rank-name { font-weight: 650; }
 .level .bar.wide { width: 70px; }
-.excluded { margin-top: 8px; font-size: 12px; }
-.excluded summary { cursor: pointer; color: var(--bad); font-weight: 650; }
-.excluded ul { list-style: none; margin: 6px 0 0; padding: 0; }
-.excluded li { display: flex; flex-direction: column; padding: 4px 0; border-bottom: 1px solid var(--border-soft); }
-.excluded li span:first-child { text-decoration: line-through; color: var(--bad); }
 .actions.end { justify-content: flex-end; margin-top: 16px; }
 
 /* ---------- Page head, panels, buttons ---------- */
@@ -135,7 +130,8 @@ main { padding-top: 28px; padding-bottom: 2rem; }
 .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 .btn.primary:hover { background: var(--accent-dark); }
 /* Activity number inside a button (e.g. "Go to monitoring") */
-.btn .activity-num { display: inline-grid; width: 20px; height: 20px; min-width: 20px; font-size: 11px; margin-right: 6px; vertical-align: -5px; }
+.btn.with-num { display: inline-flex; align-items: center; gap: 6px; }
+.btn .activity-num { width: 20px; height: 20px; min-width: 20px; font-size: 11px; }
 .btn.primary .activity-num { background: #fff; color: var(--accent-dark); }
 .btn small { color: inherit; opacity: .7; font-weight: 500; }
 .nav-buttons { display: flex; justify-content: space-between; margin: 18px 0; }
@@ -365,14 +361,18 @@ table.selection select { font: inherit; font-size: 12.5px; padding: 5px 7px; bor
 .param { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
 .param input { width: 70px; font: inherit; font-size: 12.5px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 7px; }
 
-/* ---------- Alternative identification: excluded alternatives ---------- */
 .activity-head .lg { display: inline-block; margin: 0 1px; }
-.excluded-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 20px; }
-.excluded li.inline { display: block; }
-.excluded li.inline span:first-child { margin-right: 4px; }
 .rank-dep { font-weight: 500; font-size: 11px; color: var(--muted); margin-left: 4px; }
 .score-detail { scroll-margin-top: 90px; }   /* not hidden under the sticky header */
 .score-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr); gap: 20px; align-items: start; }
 .score-grid .label:first-child { margin-top: 0; }
 @media (max-width: 1000px) { .score-grid { grid-template-columns: 1fr; } }
 .alt-summary { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 14px; font-size: 13px; }
+.rationale-input { width: 100%; min-width: 280px; font: inherit; font-size: 12.5px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 7px; resize: vertical; }
+
+/* ---------- Configuration file ---------- */
+.yaml-box { margin-top: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.yaml-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; background: var(--off-soft); border-bottom: 1px solid var(--border); }
+.yaml-head .fact-label { margin: 0; }
+.yaml-head .btn { padding: 5px 10px; font-size: 12px; }
+.yaml-box pre { margin: 0; padding: 12px 14px; overflow-x: auto; font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; background: #fbfcfc; color: var(--ink); }
