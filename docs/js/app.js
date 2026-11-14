@@ -503,7 +503,6 @@ function identificationSection() {
           ${VARIANTS.map(v => cell(rows.find(r => r.alt.kind === `${v}-${d}`))).join('')}
         </tr>`).join('')}</tbody>`).join('')}
     </table></div>
-    ${todo('Several implementations per family (e.g. collaborative filtering, content-based retrieval for traditional candidate selection).')}
   </div>`;
 }
 
@@ -594,7 +593,7 @@ function selectionSection() {
           <td><select data-action="select" data-stage="${stage.id}">${ranked.map(r =>
               `<option value="${r.variant}" ${r.variant === sel.variant ? 'selected' : ''}>${rankText(r)} ${variantLabel(r.variant)}${r.score === null ? '' : ' · ' + r.score.toFixed(3)}</option>`).join('')}
             </select>
-            ${sel.rank !== null && sel.rank !== 1 ? '<div class="muted small">not the best ranked</div>' : ''}</td>
+            </td>
           <td><select data-action="deployment" data-stage="${stage.id}">${sel.alts.map(a =>
               `<option value="${a.kind}" ${a.kind === alt.kind ? 'selected' : ''}>${DIMENSIONS.deployment.values[a.deployment]}</option>`).join('')}</select></td>
           <td>${alt.models.length ? `<select data-action="model" data-stage="${stage.id}">${alt.models.map(m =>
@@ -675,27 +674,98 @@ function downloadYaml() {
 function pipelineConstraints(req) {
   const list = req.constraints.filter(isPipelineConstraint);
   if (!list.length) return '<p class="muted small">None</p>';
-  return `<ul class="req-list">${list.map(c => `<li>${esc(c.text)}
-      <div class="muted small">Cannot be verified yet: expected performance is only estimated on a qualitative scale.</div></li>`).join('')}</ul>
-    ${todo('Verify the pipeline-level constraints with the measured values of execution feedback.')}`;
+  return `<ul class="req-list">${list.map(c => `<li>${esc(c.text)}</li>`).join('')}</ul>`;
+}
+
+// ---------- Evaluation evidence ----------
+// Executions of the current context (measurements do not transfer to other contexts).
+const contextExecutions = () => EXECUTIONS.filter(ex => ex.scenario === state.scenario);
+
+// Measurements of a stage selection: the execution that ran the same component with the same model.
+function stageEvidence(stageId, alt, model) {
+  for (const ex of contextExecutions()) {
+    const s = ex.stages[stageId];
+    if (s && s.component === alt.component && s.model === (model ? model.id : null)) return { ...s, sample: ex.sample, execution: ex };
+  }
+  return null;
+}
+
+// Measurements of the complete pipeline: an execution that ran exactly the selected configuration.
+function pipelineEvidence(rows) {
+  return contextExecutions().find(ex => rows.every(({ stage, sel }) => {
+    const s = ex.stages[stage.id];
+    const model = selectedModel(stage.id, sel.alt);
+    return s && s.component === sel.alt.component && s.model === (model ? model.id : null);
+  })) || null;
+}
+
+const fmtTime = s => (s < 0.01 ? s.toFixed(3) : s.toFixed(2)) + ' s';
+const fmtTokens = t => Math.round(t).toLocaleString('en-US');
+
+// Pipeline-level constraints checked on measured values.
+function verifyPipelineConstraint(c, ex) {
+  if (!ex) return { status: 'unknown', text: 'Not verifiable: this configuration has not been executed yet' };
+  if (c.pipeline === 'time') {
+    const ok = ex.pipeline.time <= c.max;
+    return { status: ok ? 'ok' : 'violated', text: `Measured ${fmtTime(ex.pipeline.time)} (n = ${ex.sample}): ${ok ? 'satisfied' : 'violated'}` };
+  }
+  return { status: 'unknown', text: 'No measurement for this constraint' };
 }
 
 // =====================================================================
 // Page: Monitoring (design activity 6: execution feedback)
 // =====================================================================
 function viewMonitoring() {
-  return `
-  ${pageHead('Design activity 6', 'Monitoring',
-    'Executing the selected configuration closes the design loop.')}
-  <div class="card">
-    ${activityHead(6, 'Execution feedback',
-      'Execution results provide evidence for evaluating the selected configuration and refining previous assessments.')}
-    ${todo('Measured criteria from framework executions (framework/out/computed_results), per stage and for the whole pipeline, compared with the expected performance.')}
-    ${todo('Measured values replace the estimates (provenance: measured) for subsequent comparisons.')}
-    ${todo('Derive a new pipeline version: revise stage selections or answers.')}
-  </div>
+  const rows = currentConfiguration();
+  const head = `
+  ${pageHead('Design activity 6', 'Monitoring', 'Executing the selected configuration closes the design loop.')}`;
+  const nav = `
   <div class="nav-buttons"><button class="btn" data-action="goto" data-page="config">← Back to configuration</button>
     <button class="btn" data-action="new">Start new configuration</button></div>`;
+  if (rows.some(r => !r.sel)) return `${head}<div class="card"><p class="warn-text">The configuration is incomplete: select a feasible alternative for every stage.</p></div>${nav}`;
+
+  const req = deriveRequirements(state.answers);
+  const ex = pipelineEvidence(rows);
+  const constraints = req.constraints.filter(isPipelineConstraint);
+  return `${head}
+  <div class="card">
+    ${activityHead(6, 'Execution feedback', 'Measurements of the selected configuration, per stage and for the complete pipeline, recorded as evaluation evidence.')}
+
+    <div class="label">Stage selections</div>
+    <div class="table-wrap flat"><table class="alts">
+      <thead><tr><th>Stage</th><th>Selected alternative</th><th>Response time</th><th>Cost</th><th>Sample size</th></tr></thead>
+      <tbody>${rows.map(({ stage, sel }) => {
+        const model = selectedModel(stage.id, sel.alt), ev = stageEvidence(stage.id, sel.alt, model);
+        return `<tr><th>${stage.name}</th><td>${altLabel(sel.alt)}${model ? ` <span class="muted small">· ${model.name}</span>` : ''}</td>
+          ${ev ? `<td>${fmtTime(ev.time)}</td><td>${fmtTokens(ev.tokens)} tokens</td><td>n = ${ev.sample}</td>`
+               : '<td colspan="3" class="muted">Not executed yet</td>'}</tr>`;
+      }).join('')}</tbody>
+    </table></div>
+
+    <div class="label">Complete pipeline</div>
+    ${ex ? `
+    <div class="table-wrap flat"><table class="alts">
+      <thead><tr><th>Criterion</th><th>Measured value</th><th>Measure</th><th>Sample size</th></tr></thead>
+      <tbody>
+        ${['time', 'tokens', 'intent', 'engagement', 'accuracy', 'remapped', 'notMatched'].map(k => {
+          const v = ex.pipeline[k], m = MEASURES[k];
+          const val = k === 'time' ? fmtTime(v) : k === 'tokens' ? fmtTokens(v) + ' tokens' : v.toFixed(2) + (m.unit === '0–1' ? '' : ' ' + m.unit);
+          return `<tr><th>${m.name}</th><td>${val}</td><td class="muted small">${m.how}${m.unit === '0–1' ? ', scale 0–1' : ''}</td><td>n = ${ex.sample}</td></tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>
+    <p class="small muted">Execution: ${ex.name}.</p>`
+    : '<p class="muted">The selected configuration has not been executed yet: no measurement of the complete pipeline is available.</p>'}
+
+    <div class="label">Constraints on the complete pipeline</div>
+    ${constraints.length ? `<ul class="req-list">${constraints.map(c => {
+      const v = verifyPipelineConstraint(c, ex);
+      return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
+    }).join('')}</ul>` : '<p class="muted small">None</p>'}
+
+    ${todo('Revise the expected performance of the executed alternatives with the measured values (provenance: measured).')}
+    ${todo('Derive a new pipeline version: revise stage selections or answers.')}
+  </div>${nav}`;
 }
 
 // =====================================================================

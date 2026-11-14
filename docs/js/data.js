@@ -146,12 +146,6 @@ const STAGE_ALTERNATIVES = {
       accuracy: ['VH', 'L', 'M', 'M'],
       time:     ['VH', 'H', 'M', 'L'],
       cost:     ['VH', 'M', 'M', 'L']
-    },
-    rationale: {
-      intent: 'Rules recognise only anticipated patterns. The SLM interprets free-form requests with limited reasoning; the LLM interprets them better. Agents can also link the mentioned items to the catalogue.',
-      accuracy: 'Rules are deterministic and always produce a well-formed output. LM outputs vary, the SLM more than the LLM. Agents add reasoning steps but ground the representation on the catalogue.',
-      time: 'No model invocation for rules. Response time grows with model size and with the number of invocations of agents.',
-      cost: 'No tokens for rules. SLM and LLM consume similar tokens for the same request. Agents perform several invocations.'
     }
   },
   candidates: {
@@ -173,13 +167,6 @@ const STAGE_ALTERNATIVES = {
       grounding: ['VH', 'VL', 'L', 'H'],
       time:      ['VH', 'H',  'M', 'L'],
       cost:      ['VH', 'M',  'M', 'L']
-    },
-    rationale: {
-      intent: 'ALS requires a history and the attribute filter depends on the attributes extracted from the request. Direct LMs can propose items similar to a reference without shared attributes. Agents combine interpretation with iterative catalogue queries.',
-      accuracy: 'Traditional retrieval is deterministic. Generated candidates vary, the SLM more than the LLM. Agents retrieve real items that match their queries.',
-      grounding: 'Traditional techniques return only catalogue items. Direct LMs generate items without accessing the catalogue. Agents retrieve items through queries but may rewrite them.',
-      time: 'As in input processing; LM alternatives may also retry when their output cannot be parsed.',
-      cost: 'As in input processing.'
     }
   },
   scoring: {
@@ -197,13 +184,6 @@ const STAGE_ALTERNATIVES = {
       grounding: ['VH', 'M', 'M', 'H'],
       time:      ['VH', 'H', 'M', 'L'],
       cost:      ['VH', 'M', 'M', 'L']
-    },
-    rationale: {
-      intent: 'Ratings and popularity do not depend on the subjective request. LMs judge relevance against the interpreted request; further attributes retrieved by agents add little.',
-      accuracy: 'As in input processing.',
-      grounding: 'Traditional scoring keeps the identifiers. Direct LMs rewrite the list, so identifiers may change. Agents can check items against the catalogue.',
-      time: 'LMs process every candidate; agents multiply invocations.',
-      cost: 'As response time.'
     }
   },
   ranking: {
@@ -222,13 +202,6 @@ const STAGE_ALTERNATIVES = {
       grounding: ['VH', 'M', 'M', 'M'],
       time:      ['VH', 'H', 'M', 'L'],
       cost:      ['VH', 'M', 'M', 'L']
-    },
-    rationale: {
-      intent: 'Sorting preserves the relevance computed in scoring but adds no interpretation. LMs can account for contextual factors, but receive only score and a few attributes.',
-      accuracy: 'Sorting is deterministic. LM ranking may change with the order in which candidates are presented.',
-      grounding: 'Sorting keeps the identifiers. LMs rewrite the list, so identifiers may change.',
-      time: 'As in input processing.',
-      cost: 'As in input processing.'
     }
   },
   response: {
@@ -246,13 +219,6 @@ const STAGE_ALTERNATIVES = {
       grounding:  ['VH', 'M', 'M', 'H'],
       time:       ['VH', 'H', 'M', 'L'],
       cost:       ['VH', 'M', 'M', 'L']
-    },
-    rationale: {
-      engagement: 'Templates cannot adapt to the user or the conversation. LMs generate personalised explanations and clarification questions, the LLM better than the SLM. Agents can retrieve further attributes for a more complete response.',
-      accuracy: 'Templates are always faithful to the ranked list. LM responses vary, the SLM more than the LLM. Agents can check the items they mention.',
-      grounding: 'Templates use only the ranked items. Direct LMs may mention items outside the list. Agents can verify them against the catalogue.',
-      time: 'As in input processing.',
-      cost: 'As in input processing.'
     }
   }
 };
