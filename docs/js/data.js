@@ -1,8 +1,8 @@
 // =====================================================================
-// Methodology data, mirroring the conceptual model of the paper.
-//   Stage, Criterion, Alternative (+ Characteristic, Resource,
-//   Expected Performance), Question / Answer Option -> Design Requirement
-//   (Hard Constraint | Preference) and Resource, Scenario presets.
+// Design data, mirroring the conceptual model of the paper.
+//   Stage, Criterion, Alternative (+ Characteristics, Expected Performance),
+//   Question / Answer Option -> Design Requirement (Hard Constraint | Preference),
+//   Context and scenario presets.
 // Everything the demo shows comes from this file: edit here, not in app.js.
 // =====================================================================
 
@@ -70,12 +70,16 @@ const LEVELS  = { VL: 0.1, L: 0.3, M: 0.5, H: 0.7, VH: 0.9 };
 const LEVEL_NAMES = { VL: 'Very low', L: 'Low', M: 'Medium', H: 'High', VH: 'Very high' };
 const WEIGHTS = { High: 3, Medium: 2, Low: 1 };
 
-// ---------- Resources ----------
-const RESOURCES = {
-  histories: { name: 'Interaction histories',              kind: 'data' },
-  catalogue: { name: 'Item catalogue with attributes',     kind: 'data' },
-  host_slm:  { name: 'Hardware to host an SLM internally', kind: 'computational' },
-  host_llm:  { name: 'Hardware to host an LLM internally', kind: 'computational' }
+// ---------- Required resources ----------
+// Values of the "Required resource" characteristic of an alternative.
+// Answers that declare a resource unavailable produce a hard constraint
+// excluding the alternatives that require it (checked in alternative identification).
+const REQUIRED_RESOURCES = {
+  histories:  { name: 'Interaction histories',       kind: 'data' },
+  attributes: { name: 'Structured item attributes',  kind: 'data' },
+  ratings:    { name: 'Item ratings',                kind: 'data' },
+  host_slm:   { name: 'Hardware to host an SLM',     kind: 'computational' },
+  host_llm:   { name: 'Hardware to host an LLM',     kind: 'computational' }
 };
 
 // ---------- Language models used by the framework ----------
@@ -104,7 +108,7 @@ for (const variant of VARIANTS) {
       kind: `${variant}-${deployment}`,
       variant, type, execution, deployment,
       // Hosting an LM internally needs suitable hardware.
-      requires: deployment === 'internal' && type !== 'traditional' ? ['host_' + type] : [],
+      requiredResources: deployment === 'internal' && type !== 'traditional' ? ['host_' + type] : [],
       model: LANGUAGE_MODELS[type] || null
     });
   }
@@ -121,7 +125,7 @@ const PROVENANCE = {
 
 // Stage-specific part of each alternative.
 //   technique / component / capabilities: by execution style (traditional | direct | agentic)
-//   requires: extra resources by execution style
+//   requiredResources: further required resources by execution style
 //   est: Expected Performance levels, ordered as VARIANTS
 //        [traditional, slm-direct, llm-direct, llm-agentic]
 const STAGE_ALTERNATIVES = {
@@ -133,7 +137,7 @@ const STAGE_ALTERNATIVES = {
     },
     component: { traditional: 'input_parser.rule_based', direct: 'input_parser.llm', agentic: 'input_parser.agent' },
     capabilities: { traditional: [], direct: ['freeform'], agentic: ['freeform', 'catalogue_access'] },
-    requires: { agentic: ['catalogue'] },
+    requiredResources: { agentic: ['attributes'] },   // Text-to-SQL on the catalogue
     est: {
       intent:   ['L',  'M', 'H', 'VH'],
       accuracy: ['VH', 'L', 'M', 'M'],
@@ -155,7 +159,9 @@ const STAGE_ALTERNATIVES = {
     },
     component: { traditional: 'generator.traditional', direct: 'generator.llm', agentic: 'generator.agent' },
     capabilities: { traditional: ['catalogue_access'], direct: [], agentic: ['catalogue_access'] },
-    requires: { traditional: ['histories', 'catalogue'], agentic: ['catalogue'] },
+    // ALS with attribute filtering falls back on the filter for users without a history,
+    // so it does not require interaction histories (pure ALS would).
+    requiredResources: { traditional: ['attributes'], agentic: ['attributes'] },
     params: { n_candidates: 20 },
     est: {
       intent:    ['VL', 'M',  'H', 'VH'],
@@ -180,7 +186,7 @@ const STAGE_ALTERNATIVES = {
     },
     component: { traditional: 'scorer.traditional', direct: 'scorer.llm', agentic: 'scorer.agent' },
     capabilities: { traditional: [], direct: [], agentic: ['catalogue_access'] },
-    requires: { traditional: ['catalogue'], agentic: ['catalogue'] },
+    requiredResources: { traditional: ['ratings'], agentic: ['attributes'] },
     est: {
       intent:    ['VL', 'M', 'H', 'H'],
       accuracy:  ['VH', 'L', 'M', 'M'],
@@ -204,7 +210,7 @@ const STAGE_ALTERNATIVES = {
     },
     component: { traditional: 'ranker.traditional', direct: 'ranker.llm', agentic: 'ranker.agent' },
     capabilities: { traditional: [], direct: [], agentic: ['catalogue_access'] },
-    requires: { agentic: ['catalogue'] },
+    requiredResources: { agentic: ['attributes'] },
     params: { top_k: 10 },
     est: {
       intent:    ['L',  'M', 'M', 'M'],
@@ -229,7 +235,7 @@ const STAGE_ALTERNATIVES = {
     },
     component: { traditional: 'output_generator.simple_response', direct: 'output_generator.llm', agentic: 'output_generator.agent' },
     capabilities: { traditional: [], direct: ['explanations'], agentic: ['explanations', 'catalogue_access'] },
-    requires: { agentic: ['catalogue'] },
+    requiredResources: { agentic: ['attributes'] },
     est: {
       engagement: ['VL', 'M', 'H', 'VH'],
       accuracy:   ['VH', 'L', 'M', 'H'],
@@ -254,11 +260,16 @@ const CAPABILITIES = {
 };
 
 // ---------- Questions (Scenario characterisation) ----------
-// Each answer option may imply:
-//   constraints: [{ stages: [...] | [] (=pipeline), requires: {dimension|capability: value}, text }]
+// Each question addresses one criterion or one constraint. An answer option may imply:
 //   preferences: { criterionId: 'High' | 'Medium' | 'Low' }
-//   resources:   [resourceId, ...]
-// DRAFT: wording and mappings still to be validated.
+//   constraints: hard constraints, in one of three forms
+//     { stages, requires: { capability | dimension: value }, text }
+//         the alternatives of those stages must have the characteristic
+//         (checked in alternative comparison)
+//     { unavailable: resourceId, text }
+//         no alternative may require the resource (checked in alternative identification)
+//     { pipeline: 'time', max: seconds, text }
+//         pipeline-level limit; verifiable only with measured values (execution feedback)
 const QUESTION_GROUPS = [
   { id: 'purpose',  name: 'Recommendation purpose and user interaction' },
   { id: 'data',     name: 'Available data and resources' },
@@ -268,67 +279,104 @@ const QUESTION_GROUPS = [
 
 const ALL_STAGES = STAGES.map(s => s.id);
 
+const FREEFORM = { stages: ['input'], requires: { capability: 'freeform' }, text: 'Alternatives must interpret free-form requests' };
+const NO_HISTORIES = { unavailable: 'histories', text: 'No alternative may require interaction histories' };
+const NO_ATTRIBUTES = { unavailable: 'attributes', text: 'No alternative may require structured item attributes' };
+const NO_RATINGS = { unavailable: 'ratings', text: 'No alternative may require item ratings' };
+const NO_SLM_HOST = { unavailable: 'host_slm', text: 'No alternative may require hardware to host an SLM' };
+const NO_LLM_HOST = { unavailable: 'host_llm', text: 'No alternative may require hardware to host an LLM' };
+const maxTime = s => ({ pipeline: 'time', max: s, text: `Response time of the pipeline at most ${s} s` });
+
 const QUESTIONS = [
+  // --- Recommendation purpose and user interaction ---
   { id: 'interaction', group: 'purpose',
     text: 'What type of interaction must the system support?',
     options: [
-      { id: 'structured', text: 'Predefined attributes (filters, forms)', preferences: { intent: 'Low' } },
-      { id: 'freeform', text: 'Free-form natural language, within a known domain',
-        constraints: [{ stages: ['input'], requires: { capability: 'freeform' }, text: 'Input processing must interpret free-form requests' }],
-        preferences: { intent: 'Medium' } },
-      { id: 'unconstrained', text: 'Unconstrained free-form interaction, including subjective or implicit requests',
-        constraints: [{ stages: ['input'], requires: { capability: 'freeform' }, text: 'Input processing must interpret free-form requests' }],
-        preferences: { intent: 'High' } }
+      { id: 'predefined', text: 'Predefined attributes, selected or explicitly stated', preferences: { intent: 'Low' } },
+      { id: 'freeform', text: 'Free-form requests, including indirect needs (e.g. a mood)',
+        preferences: { intent: 'Medium' }, constraints: [FREEFORM] },
+      { id: 'unconstrained', text: 'Unconstrained free-form requests, including references to other items',
+        preferences: { intent: 'High' }, constraints: [FREEFORM] }
     ] },
-  { id: 'consequence', group: 'purpose',
-    text: 'What are the consequences of an unsuitable recommendation?',
+  { id: 'presentation', group: 'purpose',
+    text: 'How must the system present its recommendations?',
     options: [
-      { id: 'limited', text: 'Limited: the user can simply ask again', preferences: { engagement: 'High', accuracy: 'Medium' } },
-      { id: 'serious', text: 'Serious: users may rely on it for important decisions', preferences: { engagement: 'Low', accuracy: 'High' } }
+      { id: 'fixed',       text: 'Only the recommended items, in a fixed format',   preferences: { engagement: 'Low' } },
+      { id: 'description', text: 'Items with a clear description in natural language', preferences: { engagement: 'Medium' } },
+      { id: 'engaging',    text: 'An engaging response in a conversational tone',   preferences: { engagement: 'High' } }
     ] },
+  { id: 'impact', group: 'purpose',
+    text: 'What is the impact of incorrect or unsuitable recommendations?',
+    options: [
+      { id: 'negligible', text: 'Negligible, as they are simply ignored',        preferences: { accuracy: 'Low' } },
+      { id: 'limited',    text: 'Limited, such as wasted time or reduced trust', preferences: { accuracy: 'Medium' } },
+      { id: 'serious',    text: 'Serious, as users may rely on them',            preferences: { accuracy: 'High' } }
+    ] },
+  { id: 'catalogue', group: 'purpose',
+    text: 'Must recommended items belong to the catalogue?',
+    options: [
+      { id: 'no',         text: 'No, other items are still useful',          preferences: { grounding: 'Low' } },
+      { id: 'preferably', text: 'Preferably, other items are of little use', preferences: { grounding: 'Medium' } },
+      { id: 'strongly',   text: 'Strongly, other items would mislead users', preferences: { grounding: 'High' } },
+      { id: 'mandatory',  text: 'Mandatory, only catalogue items are allowed', preferences: { grounding: 'High' },
+        constraints: [{ stages: ['candidates'], requires: { capability: 'catalogue_access' }, text: 'Only catalogue items may be recommended' }] }
+    ] },
+
+  // --- Available data and resources ---
   { id: 'histories', group: 'data',
     text: 'Are user interaction histories available?',
     options: [
-      { id: 'all',  text: 'Yes, for all users', resources: ['histories'] },
-      { id: 'part', text: 'Only for part of the users', resources: ['histories'] },
-      { id: 'none', text: 'No' }
+      { id: 'all',  text: 'Yes, for all users' },
+      { id: 'part', text: 'Only for part of the users', constraints: [NO_HISTORIES] },
+      { id: 'none', text: 'No', constraints: [NO_HISTORIES] }
     ] },
-  { id: 'catalogue', group: 'data',
-    text: 'Must recommendations refer to a catalogue of items?',
+  { id: 'catalogue_info', group: 'data',
+    text: 'What information does the catalogue provide?',
     options: [
-      { id: 'mandatory', text: 'Yes, only verified catalogue items may be recommended', resources: ['catalogue'],
-        constraints: [{ stages: ['candidates'], requires: { capability: 'catalogue_access' }, text: 'Candidate selection must retrieve items from the catalogue' }],
-        preferences: { grounding: 'High' } },
-      { id: 'preferred', text: 'Preferably, unavailable items degrade the experience', resources: ['catalogue'], preferences: { grounding: 'Medium' } },
-      { id: 'no', text: 'No catalogue', preferences: { grounding: 'Low' } }
+      { id: 'names',      text: 'Item names and descriptions only', constraints: [NO_ATTRIBUTES, NO_RATINGS] },
+      { id: 'attributes', text: 'Structured attributes (e.g. genre, year)', constraints: [NO_RATINGS] },
+      { id: 'ratings',    text: 'Structured attributes and user ratings' }
     ] },
   { id: 'infra', group: 'data',
-    text: 'Which infrastructure is available to host language models internally?',
+    text: 'What infrastructure is available to host language models internally?',
     options: [
-      { id: 'none', text: 'None' },
-      { id: 'slm',  text: 'Hardware able to host a small LM', resources: ['host_slm'] },
-      { id: 'llm',  text: 'Hardware able to host small and large LMs', resources: ['host_slm', 'host_llm'] }
+      { id: 'none', text: 'None', constraints: [NO_SLM_HOST, NO_LLM_HOST] },
+      { id: 'slm',  text: 'Hardware for small language models', constraints: [NO_LLM_HOST] },
+      { id: 'llm',  text: 'Hardware for large language models as well' }
     ] },
-  { id: 'external', group: 'privacy',
-    text: 'May user data be processed by external services?',
+
+  // --- Restrictions on data processing ---
+  { id: 'sensitive', group: 'privacy',
+    text: 'May sensitive data be processed by external services?',
     options: [
-      { id: 'yes', text: 'Yes, no sensitive data are processed' },
-      { id: 'no',  text: 'No, identifiable user data must stay within the organisation',
-        constraints: [{ stages: ALL_STAGES, requires: { deployment: 'internal' }, text: 'Every stage processing user data must be deployed internally' }] }
+      { id: 'none',     text: 'No sensitive data are involved' },
+      { id: 'allowed',  text: 'Yes, external processing is allowed' },
+      { id: 'internal', text: 'No, sensitive data must remain internal',
+        constraints: [{ stages: ALL_STAGES, requires: { deployment: 'internal' }, text: 'Alternatives must be deployed internally' }] }
     ] },
-  { id: 'time', group: 'ops',
-    text: 'Is additional response time acceptable in exchange for a richer interaction?',
+
+  // --- Operational conditions ---
+  { id: 'speed', group: 'ops',
+    text: 'How quickly must the system respond?',
     options: [
-      { id: 'yes',     text: 'Yes',              preferences: { time: 'Low' } },
-      { id: 'limited', text: 'Within limits',    preferences: { time: 'Medium' } },
-      { id: 'no',      text: 'No, it must be fast', preferences: { time: 'High' } }
+      { id: 'immediate', text: 'Immediately',          preferences: { time: 'High' } },
+      { id: 'seconds',   text: 'Within a few seconds', preferences: { time: 'Medium' } },
+      { id: 'longer',    text: 'Longer waits are acceptable, up to tens of seconds', preferences: { time: 'Low' } }
     ] },
-  { id: 'cost', group: 'ops',
-    text: 'Is additional inference cost acceptable?',
+  { id: 'max_time', group: 'ops',
+    text: 'Is there a maximum acceptable response time?',
     options: [
-      { id: 'yes',     text: 'Yes',           preferences: { cost: 'Low' } },
-      { id: 'limited', text: 'Within limits', preferences: { cost: 'Medium' } },
-      { id: 'no',      text: 'No',            preferences: { cost: 'High' } }
+      { id: 'no',  text: 'No' },
+      { id: 's5',  text: 'Yes, 5 seconds',  constraints: [maxTime(5)] },
+      { id: 's10', text: 'Yes, 10 seconds', constraints: [maxTime(10)] },
+      { id: 's30', text: 'Yes, 30 seconds', constraints: [maxTime(30)] }
+    ] },
+  { id: 'budget', group: 'ops',
+    text: 'How constrained is the budget per request?',
+    options: [
+      { id: 'tight',    text: 'Tight, cost must be kept minimal',           preferences: { cost: 'High' } },
+      { id: 'moderate', text: 'Moderate, limited increases are acceptable', preferences: { cost: 'Medium' } },
+      { id: 'flexible', text: 'Flexible, higher costs are acceptable',      preferences: { cost: 'Low' } }
     ] }
 ];
 
@@ -351,8 +399,9 @@ const SCENARIOS = {
     example: 'Toy Story is great, but maybe something with the same vibe for an older audience?',
     context: { project: 'Movie assistant', domain: 'Movies', items: 'Movies from the HetRec catalogue',
                users: 'Subscribers of a streaming platform' },
-    answers: { interaction: 'unconstrained', consequence: 'limited', histories: 'part', catalogue: 'preferred',
-               infra: 'slm', external: 'yes', time: 'yes', cost: 'yes' }
+    answers: { interaction: 'unconstrained', presentation: 'engaging', impact: 'limited', catalogue: 'preferably',
+               histories: 'part', catalogue_info: 'ratings', infra: 'slm', sensitive: 'none',
+               speed: 'longer', max_time: 'no', budget: 'flexible' }
   },
   healthcare: {
     name: 'Healthcare recommendation',
@@ -360,7 +409,9 @@ const SCENARIOS = {
     example: 'I was recently diagnosed with type 2 diabetes. Can you recommend a reliable, easy-to-understand guide about healthy eating and physical activity?',
     context: { project: 'Patient education assistant', domain: 'Healthcare', items: 'Educational resources validated by the organisation',
                users: 'Patients of the healthcare organisation' },
-    answers: { interaction: 'freeform', consequence: 'serious', histories: 'part', catalogue: 'mandatory',
-               infra: 'slm', external: 'no', time: 'limited', cost: 'limited' }
+    // TODO: healthcare answers still to be reviewed.
+    answers: { interaction: 'freeform', presentation: 'description', impact: 'serious', catalogue: 'mandatory',
+               histories: 'part', catalogue_info: 'ratings', infra: 'slm', sensitive: 'internal',
+               speed: 'seconds', max_time: 'no', budget: 'moderate' }
   }
 };

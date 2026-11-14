@@ -55,7 +55,7 @@ function getAlternative(stageId, kind) {
     technique: st.technique[style],
     component: st.component[style],
     capabilities: st.capabilities[style] || [],
-    requires: [...base.requires, ...((st.requires || {})[style] || [])],
+    requiredResources: [...base.requiredResources, ...((st.requiredResources || {})[style] || [])],
     params: st.params || {},
     performance,
     provenance: PROVENANCE[base.variant]
@@ -64,22 +64,21 @@ function getAlternative(stageId, kind) {
 
 const alternativesOf = stageId => ALTERNATIVE_KINDS.map(k => getAlternative(stageId, k.kind));
 
-// Requirements specification: answers -> constraints, preferences, resources.
+// Requirements specification: answers -> hard constraints and preferences.
 // When several answers weigh the same criterion, the highest priority wins.
 function deriveRequirements(answers) {
-  const constraints = [], resources = new Set(), preferences = {};
+  const constraints = [], preferences = {};
   for (const q of QUESTIONS) {
     const opt = q.options.find(o => o.id === answers[q.id]);
     if (!opt) continue;
     (opt.constraints || []).forEach(c => constraints.push({ ...c, from: q.id }));
-    (opt.resources || []).forEach(r => resources.add(r));
     for (const [crit, prio] of Object.entries(opt.preferences || {})) {
       if (!preferences[crit] || WEIGHTS[prio] > WEIGHTS[preferences[crit].priority]) {
         preferences[crit] = { priority: prio, weight: WEIGHTS[prio], from: q.id };
       }
     }
   }
-  return { constraints, resources, preferences };
+  return { constraints, preferences };
 }
 
 // Does an alternative have the characteristic required by a constraint?
@@ -88,12 +87,21 @@ function hasCharacteristic(alt, requires) {
   return Object.entries(requires).every(([dim, val]) => alt[dim] === val);
 }
 
-// Alternative identification (resources) + alternative comparison (constraints).
-// status: 'unavailable' (missing resource) | 'excluded' (violates a constraint) | 'feasible'
+// Kinds of hard constraint (see the questions in data.js).
+const isResourceConstraint = c => !!c.unavailable;   // checked in alternative identification
+const isStageConstraint    = c => !!c.requires;      // checked in alternative comparison
+const isPipelineConstraint = c => !!c.pipeline;      // needs measured values (execution feedback)
+
+// Required resources of an alternative that the answers declare unavailable.
+const unavailableResources = (alt, req) =>
+  req.constraints.filter(c => isResourceConstraint(c) && alt.requiredResources.includes(c.unavailable)).map(c => c.unavailable);
+
+// Alternative identification (resource constraints) + alternative comparison (stage constraints).
+// status: 'unavailable' (requires an unavailable resource) | 'excluded' (violates a constraint) | 'feasible'
 function assessAlternative(alt, req) {
-  const missing = alt.requires.filter(r => !req.resources.has(r));
-  if (missing.length) return { status: 'unavailable', reasons: missing.map(r => 'Requires ' + RESOURCES[r].name.toLowerCase()) };
-  const violated = req.constraints.filter(c => (c.stages.length === 0 || c.stages.includes(alt.stage)) && !hasCharacteristic(alt, c.requires));
+  const missing = unavailableResources(alt, req);
+  if (missing.length) return { status: 'unavailable', reasons: missing.map(r => 'Requires ' + REQUIRED_RESOURCES[r].name.toLowerCase()) };
+  const violated = req.constraints.filter(c => isStageConstraint(c) && c.stages.includes(alt.stage) && !hasCharacteristic(alt, c.requires));
   if (violated.length) return { status: 'excluded', reasons: violated.map(c => c.text) };
   return { status: 'feasible', reasons: [] };
 }
@@ -197,7 +205,7 @@ function viewHome() {
   return `
   <section class="hero">
     <div class="eyebrow">Model-based design of recommender systems</div>
-    <h1>Recommending the recommender</h1>
+    <h1>Recommending the Recommender</h1>
     <p>Design a recommendation pipeline stage by stage. Answer a few questions about your application, see which
        traditional or language-model-based alternatives satisfy its constraints and best fit its priorities,
        and obtain a configuration file that the framework executes.</p>
@@ -246,8 +254,8 @@ function viewHome() {
     <div class="card-head"><h2>Design activities</h2></div>
     <ol class="activity-list">
       <li><strong>Scenario characterisation</strong> — the designer answers predefined questions.</li>
-      <li><strong>Requirements specification</strong> — answers imply constraints, preferences over criteria and resources.</li>
-      <li><strong>Alternative identification</strong> — alternatives realisable with the available resources.</li>
+      <li><strong>Requirements specification</strong> — answers imply hard constraints and preferences over criteria.</li>
+      <li><strong>Alternative identification</strong> — alternatives whose required resources are available.</li>
       <li><strong>Alternative comparison</strong> — exclude those violating constraints, rank the feasible ones.</li>
       <li><strong>Configuration selection</strong> — the designer chooses one alternative per stage; configuration file.</li>
       <li><strong>Execution feedback</strong> — measurements validate or revise the design.</li>
@@ -335,7 +343,7 @@ function altDetail(alt) {
     <div class="alt-facts">
       <div><span class="fact-label">Framework component</span><code>${alt.component}</code>${alt.model ? ` <span class="muted">with</span> <code>${alt.model.id}</code>` : ''}</div>
       <div><span class="fact-label">Capabilities</span>${alt.capabilities.map(c => chip(CAPABILITIES[c])).join(' ') || none}</div>
-      <div><span class="fact-label">Requires</span>${alt.requires.map(r => chip(RESOURCES[r].name)).join(' ') || none}</div>
+      <div><span class="fact-label">Required resources</span>${alt.requiredResources.map(r => chip(REQUIRED_RESOURCES[r].name)).join(' ') || none}</div>
     </div>
     <div class="label">Expected performance <span class="label-note">· ${alt.provenance} · higher is better</span></div>
     <ul class="perf-list">
@@ -402,10 +410,9 @@ function viewConfiguration() {
             <div class="card-head"><h2>${g.name}</h2></div>
             ${QUESTIONS.filter(q => q.group === g.id).map(questionBlock).join('')}
           </div>`).join('')}
-        ${todo('Questions and their mapping on constraints, criteria and resources are being revised.')}
       </div>
       <aside class="sticky">
-        ${activityHead(2, 'Requirements specification', 'Constraints, preferences and resources implied by the answers.')}
+        ${activityHead(2, 'Requirements specification', 'Hard constraints and preferences implied by the answers.')}
         <div id="requirements">${requirementsPanel()}</div>
       </aside>
     </div>
@@ -433,6 +440,7 @@ function questionBlock(q) {
 }
 
 // ---------- Requirements specification ----------
+
 function requirementsPanel() {
   const req = deriveRequirements(state.answers);
   const qText = id => QUESTIONS.find(q => q.id === id).text;
@@ -446,25 +454,21 @@ function requirementsPanel() {
       const p = req.preferences[c.id];
       return `<li ${p ? `title="From: ${esc(qText(p.from))}"` : ''}><span>${c.name} <span class="muted small">· ${c.family}</span></span>
         ${p ? `<span class="prio prio-${p.priority}">${p.priority} · weight ${p.weight}</span>` : '<span class="muted small">not weighted</span>'}</li>`;
-    }).join('')}</ul>
-
-    <div class="label">Available resources</div>
-    ${req.resources.size ? `<p>${[...req.resources].map(r => chip(RESOURCES[r].name)).join(' ')}</p>` : '<p class="muted">None yet</p>'}
-  </div>`;
+    }).join('')}</ul>  </div>`;
 }
 
 // ---------- Alternative identification ----------
 function identificationSection() {
   const req = deriveRequirements(state.answers);
   const cell = alt => {
-    const missing = alt.requires.filter(r => !req.resources.has(r));
-    const tip = `${altLabel(alt)} — ${alt.component}` + (missing.length ? ` · requires ${missing.map(r => RESOURCES[r].name.toLowerCase()).join(', ')}` : ' · realisable');
+    const missing = unavailableResources(alt, req);
+    const tip = `${altLabel(alt)} — ${alt.component}` + (missing.length ? ` · requires ${missing.map(r => REQUIRED_RESOURCES[r].name.toLowerCase()).join(', ')}, declared unavailable` : ' · realisable');
     return `<td class="ef ${missing.length ? 'st-unavailable' : 'st-feasible'}" title="${esc(tip)}">${missing.length ? '–' : '✓'}</td>`;
   };
   return `
-  ${activityHead(3, 'Alternative identification', 'For each stage, the alternatives that can be realised with the available resources, with their expected performance.')}
+  ${activityHead(3, 'Alternative identification', 'For each stage, the alternatives that can be realised: those requiring a resource declared unavailable are discarded.')}
   <div class="card">
-    <div class="legend"><span class="lg st-feasible">✓ realisable</span><span class="lg st-unavailable">– missing resource</span>
+    <div class="legend"><span class="lg st-feasible">✓ realisable</span><span class="lg st-unavailable">– requires an unavailable resource</span>
       <span class="muted small">Hover a cell for details</span></div>
     <div class="table-wrap"><table class="effects">
       <thead><tr><th>Stage</th><th></th>${VARIANTS.map(v => `<th>${variantLabel(v)}</th>`).join('')}</tr></thead>
@@ -496,6 +500,9 @@ function comparisonSection() {
   </div>`;
 }
 
+// Rank is undefined when no criterion is weighted yet.
+const rankText = r => r.rank === null ? '—' : '#' + r.rank;
+
 function stageComparison(stage, rows) {
   const feasible = rankedFeasible(rows);
   const excluded = rows.filter(r => r.status === 'excluded');
@@ -509,17 +516,25 @@ function stageComparison(stage, rows) {
         <label class="rank-row ${selected && selected.alt.kind === r.alt.kind ? 'selected' : ''}">
           <input type="radio" name="sel-${stage.id}" value="${r.alt.kind}" data-action="select" data-stage="${stage.id}"
                  ${selected && selected.alt.kind === r.alt.kind ? 'checked' : ''}>
-          <span class="rank">#${r.rank}</span>
+          <span class="rank">${rankText(r)}</span>
           <span class="rank-name">${altLabel(r.alt)}</span>
           ${scoreBar(r.score)}
         </label>
       </li>`).join('')}</ul>`
-      : '<p class="warn-text">No feasible alternative: revise the answers or the available resources.</p>'}
+      : '<p class="warn-text">No feasible alternative: revise the answers.</p>'}
     ${excluded.length ? `<details class="excluded"><summary>${excluded.length} excluded by constraints</summary>
       <ul>${excluded.map(r => `<li><span>${altLabel(r.alt)}</span><span class="muted">${esc(r.reasons.join('; '))}</span></li>`).join('')}</ul>
     </details>` : ''}
     ${unavailable ? `<p class="small muted">${unavailable} not realisable (see alternative identification)</p>` : ''}
   </div>`;
+}
+
+// Pipeline-level constraints (e.g. maximum response time) concern the whole configuration and
+// can be verified only with measured values, after execution.
+function pipelineConstraints() {
+  const list = deriveRequirements(state.answers).constraints.filter(isPipelineConstraint);
+  return list.map(c => todo(`Check the pipeline-level constraint “${esc(c.text)}” on the selected configuration.
+    It cannot be verified yet, since expected performance is only estimated: it will be checked with the measured values of execution feedback.`)).join('');
 }
 
 function selectionTable(comparisons) {
@@ -532,10 +547,11 @@ function selectionTable(comparisons) {
         if (!r) return `<tr><th>${stage.name}</th><td colspan="4" class="warn-text">No feasible alternative</td></tr>`;
         return `<tr><th>${stage.name}</th><td>${altLabel(r.alt)} <div>${dimensionChips(r.alt)}</div></td>
           <td><code>${r.alt.component}</code></td><td>${r.alt.model ? `<code>${r.alt.model.id}</code>` : '<span class="muted">—</span>'}</td>
-          <td>#${r.rank}${r.rank !== 1 ? ' <span class="muted small">(not the best ranked)</span>' : ''}</td></tr>`;
+          <td>${rankText(r)}${r.rank !== null && r.rank !== 1 ? ' <span class="muted small">(not the best ranked)</span>' : ''}</td></tr>`;
       }).join('')}</tbody>
     </table></div>
-    ${todo('Rationale for each choice, parameters (n_candidates, top_k) and pipeline-level constraint check.')}
+    ${pipelineConstraints()}
+    ${todo('Rationale for each choice and parameters (n_candidates, top_k).')}
     <div class="actions end">
       <button class="btn" data-action="yaml">Generate YAML configuration file</button>
       <button class="btn primary" data-action="goto" data-page="monitor"><span class="activity-num">6</span> Go to monitoring →</button>
