@@ -83,10 +83,12 @@ const REQUIRED_RESOURCES = {
 };
 
 // ---------- Language models used by the framework ----------
-const LANGUAGE_MODELS = {
-  slm: { id: 'mistral.ministral-3-8b-instruct', name: 'Ministral-3-8B' },
-  llm: { id: 'openai.gpt-oss-120b',             name: 'GPT-OSS-120B' }
-};
+// An LM-based alternative can use any language model of its type (selected in configuration selection).
+const LANGUAGE_MODELS = [
+  { id: 'mistral.ministral-3-8b-instruct', name: 'Ministral-3-8B', type: 'slm' },
+  { id: 'openai.gpt-oss-120b',             name: 'GPT-OSS-120B',   type: 'llm' }
+  // TODO: further models supported by the framework.
+];
 
 // ---------- Alternatives ----------
 // The design space is type x deployment x execution. A "variant" is
@@ -109,18 +111,18 @@ for (const variant of VARIANTS) {
       variant, type, execution, deployment,
       // Hosting an LM internally needs suitable hardware.
       requiredResources: deployment === 'internal' && type !== 'traditional' ? ['host_' + type] : [],
-      model: LANGUAGE_MODELS[type] || null
+      models: LANGUAGE_MODELS.filter(m => m.type === type),   // compatible language models
+      model: LANGUAGE_MODELS.find(m => m.type === type) || null // default one
     });
   }
 }
 
-// Expected-performance provenance (conceptual model): all values are the
-// designer's estimates from the Excel workbook, before any execution.
+// Provenance of the expected performance (conceptual model): how the values were obtained.
+// Before any execution, all values are the designer's estimates; after execution feedback
+// they can be replaced by values aggregated from measurements.
 const PROVENANCE = {
-  traditional: 'Estimated (Excel workbook)',
-  'slm-direct': 'Estimated (Excel workbook)',
-  'llm-direct': 'Estimated (Excel workbook)',
-  'llm-agentic': 'Estimated (Excel workbook)'
+  kind: 'Estimated',
+  method: 'Expert judgement of the designer, on the qualitative scale VL–VH'
 };
 
 // Stage-specific part of each alternative.
@@ -262,14 +264,15 @@ const CAPABILITIES = {
 // ---------- Questions (Scenario characterisation) ----------
 // Each question addresses one criterion or one constraint. An answer option may imply:
 //   preferences: { criterionId: 'High' | 'Medium' | 'Low' }
-//   constraints: hard constraints, in one of three forms
+//   constraints: hard constraints. Stage-level ones are checked in alternative identification:
 //     { stages, requires: { capability | dimension: value }, text }
 //         the alternatives of those stages must have the characteristic
-//         (checked in alternative comparison)
 //     { unavailable: resourceId, text }
-//         no alternative may require the resource (checked in alternative identification)
+//         no alternative may require the resource
+//     { stages, criterion, min: level, text }
+//         threshold: expected performance on the criterion at least the level (none used yet)
+//   The pipeline-level one is checked in configuration selection, on the complete configuration:
 //     { pipeline: 'time', max: seconds, text }
-//         pipeline-level limit; verifiable only with measured values (execution feedback)
 const QUESTION_GROUPS = [
   { id: 'purpose',  name: 'Recommendation purpose and user interaction' },
   { id: 'data',     name: 'Available data and resources' },

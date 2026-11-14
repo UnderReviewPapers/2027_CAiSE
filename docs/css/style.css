@@ -348,3 +348,31 @@ td.ef { font-weight: 750; font-variant-numeric: tabular-nums; cursor: help; bord
   .perf-list li > .muted { display: none; }
   .arrow { transform: rotate(90deg); }
 }
+
+/* ---------- Alternative comparison: score breakdown ---------- */
+button.rank-row { width: 100%; background: #fff; font: inherit; text-align: left; color: inherit; grid-template-columns: 30px 1fr auto; }
+.score-detail { margin-top: 16px; }
+.score-detail tr.muted th, .score-detail tr.muted td { color: var(--muted); }
+.score-detail .total-row th, .score-detail .total-row td { font-weight: 800; border-top: 2px solid var(--border); }
+.provenance { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 0; font-size: 12.5px; }
+.provenance dt { font-weight: 700; color: var(--muted); }
+.provenance dd { margin: 0; }
+.rationale-list { margin: 0; padding-left: 18px; font-size: 12.5px; }
+.rationale-list li { margin-bottom: 4px; }
+
+/* ---------- Configuration selection ---------- */
+table.selection select { font: inherit; font-size: 12.5px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 7px; background: #fff; max-width: 100%; }
+.param { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.param input { width: 70px; font: inherit; font-size: 12.5px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 7px; }
+
+/* ---------- Alternative identification: excluded alternatives ---------- */
+.activity-head .lg { display: inline-block; margin: 0 1px; }
+.excluded-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 20px; }
+.excluded li.inline { display: block; }
+.excluded li.inline span:first-child { margin-right: 4px; }
+.rank-dep { font-weight: 500; font-size: 11px; color: var(--muted); margin-left: 4px; }
+.score-detail { scroll-margin-top: 90px; }   /* not hidden under the sticky header */
+.score-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr); gap: 20px; align-items: start; }
+.score-grid .label:first-child { margin-top: 0; }
+@media (max-width: 1000px) { .score-grid { grid-template-columns: 1fr; } }
+.alt-summary { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 14px; font-size: 13px; }
