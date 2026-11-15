@@ -28,6 +28,9 @@ const state = {
   rationale: {},                      // stageId -> designer's rationale for the choice
   showYaml: false,                    // configuration selection: configuration file shown
   inspect: null,                    // alternative comparison: { stage, variant } whose score is shown
+  version: 1,                         // pipeline version (a new one is derived after execution feedback)
+  revisions: {},                      // stageId -> variant -> criterion -> level revised by the designer
+  draft: {},                          // monitoring: revisions not yet applied to a new version
   exploreStage: 'input',              // design-space page: selected stage
   exploreAlt: 'llm-agentic-external'  // design-space page: selected alternative
 };
@@ -62,8 +65,7 @@ function getAlternative(stageId, kind) {
     capabilities: st.capabilities[style] || [],
     requiredResources: [...base.requiredResources, ...((st.requiredResources || {})[style] || [])],
     params: (st.params || {})[style] || {},
-    performance,
-    provenance: PROVENANCE
+    performance           // estimated levels (see expectedPerformance for the values used in the comparison)
   };
 }
 
@@ -95,7 +97,7 @@ const appliesToStage = (c, stageId) => !isPipelineConstraint(c) && (!c.stages ||
 // Does an alternative satisfy a stage-level constraint?
 function satisfies(alt, c) {
   if (c.unavailable) return !alt.requiredResources.includes(c.unavailable);                     // required resource
-  if (c.criterion) return !alt.performance[c.criterion] || LEVELS[alt.performance[c.criterion]] >= LEVELS[c.min]; // threshold
+  if (c.criterion) { const ep = expectedPerformance(alt, c.criterion); return !ep || ep.value >= LEVELS[c.min]; } // threshold
   if (c.requires.capability) return alt.capabilities.includes(c.requires.capability);          // capability
   return Object.entries(c.requires).every(([dim, val]) => alt[dim] === val);                   // design-space dimension
 }
@@ -109,18 +111,60 @@ function identifyStage(stageId, req) {
   });
 }
 
+// ---------- Expected performance used in the comparison ----------
+// Criteria measured per stage, with the corresponding measure in the executions.
+const MEASURED_CRITERIA = { time: 'time', cost: 'tokens' };
+
+// Measurement of a criterion for a variant of a stage (with its default model), from the most recent
+// execution of the current context of a pipeline version up to upTo.
+function measurementOf(stageId, variant, crit, upTo) {
+  const key = MEASURED_CRITERIA[crit];
+  if (!key) return null;
+  const alt = getAlternative(stageId, variant + '-internal');
+  const executions = contextExecutions().filter(ex => ex.version <= upTo).sort((a, b) => b.version - a.version);
+  for (const ex of executions) {
+    const s = ex.stages[stageId];
+    if (s && s.component === alt.component && s.model === (alt.model ? alt.model.id : null)) return { raw: s[key], sample: ex.sample };
+  }
+  return null;
+}
+
+// Highest value of a criterion observed for a stage, in all the executions of the context
+// (reference executions included): the reference for normalisation.
+function highestMeasurement(stageId, crit) {
+  const key = MEASURED_CRITERIA[crit];
+  const values = contextExecutions(['execution', 'reference']).map(ex => ex.stages[stageId]).filter(Boolean).map(s => s[key]);
+  return values.length ? Math.max(...values) : null;
+}
+
+// Expected performance of an alternative on a criterion, as used in the comparison (higher is better):
+//   Measured  - the alternative has been executed: the measurement, normalised with respect to the highest
+//               value observed for the stage, onto the scale of the estimates: 0.9 - 0.8 * value / highest
+//               (a value close to 0 counts as VH, the highest as VL);
+//   Revised   - estimate revised by the designer after an execution;
+//   Estimated - initial estimate of the designer.
+// A pipeline version uses the measurements of the executions of the previous versions
+// (upTo = the last version whose results are applied).
+function expectedPerformance(alt, crit, upTo = state.version - 1) {
+  const m = measurementOf(alt.stage, alt.variant, crit, upTo), max = m && highestMeasurement(alt.stage, crit);
+  if (m && max !== null) return { kind: 'Measured', value: max > 0 ? 0.9 - 0.8 * m.raw / max : 0.9, raw: m.raw, sample: m.sample };
+  const revised = ((state.revisions[alt.stage] || {})[alt.variant] || {})[crit];
+  const level = revised || alt.performance[crit];
+  return level ? { kind: revised ? 'Revised' : 'Estimated', level, value: LEVELS[level] } : null;
+}
+
 // ---------- Preferences ----------
-// Contribution of each criterion the stage influences: level, value and weight.
+// Contribution of each criterion the stage influences: expected performance, value and weight.
 function scoreBreakdown(alt, preferences) {
   return STAGE_CRITERIA[alt.stage].map(crit => {
-    const level = alt.performance[crit], pref = preferences[crit];
-    return { crit, level, value: LEVELS[level], weight: pref ? pref.weight : 0, priority: pref ? pref.priority : null };
+    const ep = expectedPerformance(alt, crit), pref = preferences[crit];
+    return { crit, ep, value: ep ? ep.value : null, weight: pref ? pref.weight : 0, priority: pref ? pref.priority : null };
   });
 }
 
 // Weighted sum over the weighted criteria, normalised by the total weight.
 function scoreAlternative(alt, preferences) {
-  const parts = scoreBreakdown(alt, preferences).filter(p => p.weight && p.level);
+  const parts = scoreBreakdown(alt, preferences).filter(p => p.weight && p.ep);
   const weights = parts.reduce((s, p) => s + p.weight, 0);
   return weights ? parts.reduce((s, p) => s + p.value * p.weight, 0) / weights : null;
 }
@@ -180,7 +224,25 @@ function loadScenario(id) {
 function startNew() { state.scenario = null; state.context = {}; state.answers = {}; resetDesign(); goTo('config'); }
 
 // Forget the designer's choices of a previous configuration.
-function resetDesign() { state.selections = {}; state.models = {}; state.params = {}; state.rationale = {}; state.inspect = null; }
+function resetDesign() {
+  state.selections = {}; state.models = {}; state.params = {}; state.rationale = {}; state.inspect = null;
+  state.version = 1; state.revisions = {}; state.draft = {};
+}
+
+// Execution feedback: a new pipeline version with the estimates revised by the designer.
+function deriveVersion() {
+  // The new version starts from the current configuration: rankings may change, selections change only if the designer says so.
+  for (const { stage, sel } of currentConfiguration()) if (sel) state.selections[stage.id] = sel.alt.kind;
+  for (const [stage, byVariant] of Object.entries(state.draft))
+    for (const [variant, byCrit] of Object.entries(byVariant))
+      for (const [crit, level] of Object.entries(byCrit)) {
+        const target = ((state.revisions[stage] = state.revisions[stage] || {})[variant] = state.revisions[stage][variant] || {});
+        if (level) target[crit] = level;                      // empty = keep the current value
+      }
+  state.draft = {};
+  state.version += 1;
+  goTo('config');
+}
 
 // =====================================================================
 // Rendering
@@ -371,7 +433,7 @@ function altDetail(alt) {
       <div><span class="fact-label">Capabilities</span>${alt.capabilities.map(c => chip(CAPABILITIES[c])).join(' ') || none}</div>
       <div><span class="fact-label">Required resources</span>${alt.requiredResources.map(r => chip(REQUIRED_RESOURCES[r].name)).join(' ') || none}</div>
     </div>
-    <div class="label">Expected performance <span class="label-note">· ${alt.provenance.kind} · higher is better</span></div>
+    <div class="label">Expected performance <span class="label-note">· estimated · higher is better</span></div>
     <ul class="perf-list">
       ${STAGE_CRITERIA[alt.stage].map(c => `
         <li>
@@ -418,7 +480,7 @@ function contextCard() {
 function viewConfiguration() {
   const sc = state.scenario && SCENARIOS[state.scenario];
   return `
-  ${pageHead(sc ? `Example loaded · ${sc.name}` : 'New configuration', 'Configuration',
+  ${pageHead(`${sc ? `Example loaded · ${sc.name}` : 'New configuration'} · Pipeline version v${state.version}`, 'Configuration',
     `${sc ? 'Answers are loaded from the example; change any of them to see the effect.' : 'Answer the questions to characterise your application.'}
      The design activities below update as you answer.`)}
 
@@ -539,6 +601,7 @@ function comparisonSection() {
 function scoreDetail(stage, row, req) {
   const alt = row.alt;
   const parts = scoreBreakdown(alt, req.preferences);
+  const kinds = [...new Set(parts.filter(p => p.ep).map(p => p.ep.kind))];
   return `
   <div class="card score-detail">
     <div class="card-head"><h2>${stage.name} · ${variantLabel(row.variant)}</h2><span>${deploymentChips(row.alts)}</span></div>
@@ -548,24 +611,30 @@ function scoreDetail(stage, row, req) {
     </div>
     <div class="score-grid">
     <div class="table-wrap flat"><table class="alts">
-      <thead><tr><th>Criterion</th><th>Expected performance</th><th>Weight</th><th>Weighted value</th></tr></thead>
+      <thead><tr><th>Criterion</th><th>Expected performance</th><th>Provenance</th><th>Weight</th><th>Weighted value</th></tr></thead>
       <tbody>${parts.map(p => `
-        <tr class="${p.weight ? '' : 'muted'}"><th>${criterionById(p.crit).name}</th><td>${levelBadge(p.level)} ${p.level ? `<span class="muted small">= ${p.value}</span>` : ''}</td>
+        <tr class="${p.weight ? '' : 'muted'}"><th>${criterionById(p.crit).name}</th><td>${expectedCell(p.crit, p.ep)}</td>
+          <td>${p.ep ? p.ep.kind : '—'}</td>
           <td>${p.weight ? `${p.weight} <span class="muted small">(${p.priority})</span>` : 'not weighted'}</td>
-          <td>${p.weight && p.level ? (p.value * p.weight).toFixed(2) : '—'}</td></tr>`).join('')}
-        <tr class="total-row"><th>Score</th><td colspan="2" class="muted small">sum of weighted values / total weight</td>
+          <td>${p.weight && p.ep ? (p.value * p.weight).toFixed(2) : '—'}</td></tr>`).join('')}
+        <tr class="total-row"><th>Score</th><td colspan="3" class="muted small">sum of weighted values / total weight</td>
           <td>${row.score === null ? '—' : row.score.toFixed(3)}</td></tr>
       </tbody>
     </table></div>
     <div>
       <div class="label">Provenance of the expected performance</div>
-      <dl class="provenance">
-        <dt>Kind</dt><dd>${alt.provenance.kind}</dd>
-        <dt>Method</dt><dd>${alt.provenance.method}</dd>
-      </dl>
+      <dl class="provenance">${kinds.map(k => `<dt>${k}</dt><dd>${PROVENANCE[k]}</dd>`).join('')}</dl>
     </div>
     </div>
   </div>`;
+}
+
+// Expected performance cell: level for (revised) estimates, normalised value for measurements.
+function expectedCell(crit, ep) {
+  if (!ep) return '<span class="muted">—</span>';
+  // Measured values are on the same 0-1 scale as the estimates; the raw measure is shown in monitoring.
+  if (ep.kind === 'Measured') return `<span class="level"><span class="bar"><span style="width:${ep.value * 100}%"></span></span>${ep.value.toFixed(2)}</span>`;
+  return `${levelBadge(ep.level)} <span class="muted small">= ${ep.value}</span>`;
 }
 
 // ---------- Activity 5: Configuration selection ----------
@@ -629,6 +698,7 @@ function yamlText(rows) {
   const response = rows.find(r => r.stage.id === 'response').sel.alt.component;
   const lines = [
     '# Recommender pipeline configuration, generated by the Recommender Design Demo.',
+    `# Pipeline version: v${state.version}`,
     ...ctx.map(f => `# ${f.label}: ${oneLine(state.context[f.id])}`),
     '',
     'state:', `  class: ${FRAMEWORK_CONFIG.state}`, '',
@@ -678,33 +748,105 @@ function pipelineConstraints(req) {
 }
 
 // ---------- Evaluation evidence ----------
-// Executions of the current context (measurements do not transfer to other contexts).
-const contextExecutions = () => EXECUTIONS.filter(ex => ex.scenario === state.scenario);
+// Executions of the current context with the given roles (measurements do not transfer to other contexts).
+const contextExecutions = (roles = ['execution']) => EXECUTIONS.filter(ex => ex.scenario === state.scenario && roles.includes(ex.role));
 
-// Measurements of a stage selection: the execution that ran the same component with the same model.
-function stageEvidence(stageId, alt, model) {
-  for (const ex of contextExecutions()) {
-    const s = ex.stages[stageId];
-    if (s && s.component === alt.component && s.model === (model ? model.id : null)) return { ...s, sample: ex.sample, execution: ex };
-  }
-  return null;
+// Does an execution step correspond to an alternative with a given model?
+const sameStep = (s, alt, model) => !!s && s.component === alt.component && s.model === (model ? model.id : null);
+
+// Execution of the current pipeline version: it ran exactly the selected configuration.
+function currentExecution(rows) {
+  return contextExecutions().find(ex => ex.version === state.version &&
+    rows.every(({ stage, sel }) => sameStep(ex.stages[stage.id], sel.alt, selectedModel(stage.id, sel.alt)))) || null;
 }
 
-// Measurements of the complete pipeline: an execution that ran exactly the selected configuration.
-function pipelineEvidence(rows) {
-  return contextExecutions().find(ex => rows.every(({ stage, sel }) => {
-    const s = ex.stages[stage.id];
-    const model = selectedModel(stage.id, sel.alt);
-    return s && s.component === sel.alt.component && s.model === (model ? model.id : null);
-  })) || null;
+// Executions of the previous pipeline versions, most recent first.
+const previousExecutions = () => contextExecutions().filter(ex => ex.version < state.version).sort((a, b) => b.version - a.version);
+
+// Executed alternative of a stage, e.g. "LLM agentic · GPT-OSS-120B".
+function executedLabel(stageId, s) {
+  const variant = VARIANTS.find(v => {
+    const a = getAlternative(stageId, v + '-internal');
+    return a.component === s.component && (a.models.length ? a.models.some(m => m.id === s.model) : s.model === null);
+  });
+  const model = LANGUAGE_MODELS.find(m => m.id === s.model);
+  return (variant ? variantLabel(variant) : s.component) + (model ? ` <span class="muted small">· ${model.name}</span>` : '');
 }
 
 const fmtTime = s => (s < 0.01 ? s.toFixed(3) : s.toFixed(2)) + ' s';
 const fmtTokens = t => Math.round(t).toLocaleString('en-US');
+const fmtMeasure = (crit, raw) => crit === 'time' ? fmtTime(raw) : fmtTokens(raw) + ' tokens';
+
+// Measurements of an execution: per stage and for the complete pipeline.
+function executionTables(ex) {
+  return `
+    <div class="label">Stage selections</div>
+    <div class="table-wrap flat"><table class="alts">
+      <thead><tr><th>Stage</th><th>Executed alternative</th><th>Response time</th><th>Cost</th><th>Sample size</th></tr></thead>
+      <tbody>${STAGES.map(stage => {
+        const s = ex.stages[stage.id];
+        return `<tr><th>${stage.name}</th><td>${executedLabel(stage.id, s)}</td>
+          <td>${fmtTime(s.time)}</td><td>${fmtTokens(s.tokens)} tokens</td><td>n = ${ex.sample}</td></tr>`;
+      }).join('')}</tbody>
+    </table></div>
+
+    <div class="label">Complete pipeline</div>
+    <div class="table-wrap flat"><table class="alts">
+      <thead><tr><th>Criterion</th><th>Measured value</th><th>Measure</th><th>Sample size</th></tr></thead>
+      <tbody>
+        ${['time', 'tokens', 'intent', 'engagement', 'accuracy', 'remapped', 'notMatched'].map(k => {
+          const v = ex.pipeline[k], m = MEASURES[k];
+          const val = k === 'time' ? fmtTime(v) : k === 'tokens' ? fmtTokens(v) + ' tokens' : v.toFixed(2) + (m.unit === '0–1' ? '' : ' ' + m.unit);
+          return `<tr><th>${m.name}</th><td>${val}</td><td class="muted small">${m.how}${m.unit === '0–1' ? ', scale 0–1' : ''}</td><td>n = ${ex.sample}</td></tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+// Evidence for updating a criterion: the stage measurement (response time, cost)
+// or, for the other criteria, the measurement of the complete pipeline.
+function revisionEvidence(crit, s, ex) {
+  if (crit === 'time') return `${fmtTime(s.time)} <span class="muted small">stage · n = ${ex.sample}</span>`;
+  if (crit === 'cost') return `${fmtTokens(s.tokens)} tokens <span class="muted small">stage · n = ${ex.sample}</span>`;
+  const p = ex.pipeline, n = `<span class="muted small">pipeline · n = ${ex.sample}</span>`;
+  if (crit === 'grounding') return `${p.remapped.toFixed(2)} remapped, ${p.notMatched.toFixed(2)} not matched ${n}`;
+  return `${p[crit].toFixed(2)} ${n}`;
+}
+
+// Update of the expected performance of the executed alternatives: response time and cost become
+// measured; the other criteria are measured on the complete pipeline and the designer may revise their estimates.
+function revisionSection(rows, ex) {
+  const draftOf = (st, v, c) => ((state.draft[st] || {})[v] || {})[c];
+  return `
+    <div class="label">Update the expected performance</div>
+    <p class="small muted">Response time and cost of the executed alternatives are replaced by their measurements, normalised with respect to
+       the highest value observed for the stage.<br> The other criteria are measured on the complete pipeline: the designer may revise their estimates.</p>
+    <div class="table-wrap flat"><table class="alts revision">
+      <thead><tr><th>Criterion</th><th>Expected performance</th><th>Measured</th><th>New value</th></tr></thead>
+      ${rows.map(({ stage, sel }) => {
+        const alt = sel.alt, s = ex.stages[stage.id];
+        return `<tbody><tr class="group-row"><th colspan="4">${stage.name} · ${variantLabel(alt.variant)}</th></tr>
+          ${STAGE_CRITERIA[stage.id].map(c => {
+            const ep = expectedPerformance(alt, c), d = draftOf(stage.id, alt.variant, c);
+            const next = expectedPerformance(alt, c, state.version);  // value once the results of this version are applied
+            return `<tr><th>${criterionById(c).name}</th><td>${expectedCell(c, ep)} <span class="muted small">${ep ? ep.kind : ''}</span></td>
+              <td>${revisionEvidence(c, s, ex)}</td>
+              <td>${next && next.kind === 'Measured' ? `${expectedCell(c, next)} <span class="muted small">Measured</span>` : `
+                <select data-action="revise" data-stage="${stage.id}" data-variant="${alt.variant}" data-crit="${c}">
+                  <option value="">Keep ${ep ? ep.level : ''}</option>
+                  ${Object.keys(LEVELS).map(l => `<option value="${l}" ${d === l ? 'selected' : ''}>${l} · ${LEVEL_NAMES[l]}</option>`).join('')}
+                </select>`}</td></tr>`;
+          }).join('')}</tbody>`;
+      }).join('')}
+    </table></div>
+    <div class="actions end">
+      <button class="btn primary" data-action="derive">Derive pipeline version v${state.version + 1} →</button>
+    </div>`;
+}
 
 // Pipeline-level constraints checked on measured values.
 function verifyPipelineConstraint(c, ex) {
-  if (!ex) return { status: 'unknown', text: 'Not verifiable: this configuration has not been executed yet' };
+  if (!ex) return { status: 'unknown', text: 'Not verifiable: this pipeline version has not been executed yet' };
   if (c.pipeline === 'time') {
     const ok = ex.pipeline.time <= c.max;
     return { status: ok ? 'ok' : 'violated', text: `Measured ${fmtTime(ex.pipeline.time)} (n = ${ex.sample}): ${ok ? 'satisfied' : 'violated'}` };
@@ -718,44 +860,22 @@ function verifyPipelineConstraint(c, ex) {
 function viewMonitoring() {
   const rows = currentConfiguration();
   const head = `
-  ${pageHead('Design activity 6', 'Monitoring', 'Executing the selected configuration closes the design loop.')}`;
+  ${pageHead(`Design activity 6 · Pipeline version v${state.version}`, 'Monitoring', 'Executing the selected configuration closes the design loop.')}`;
   const nav = `
   <div class="nav-buttons"><button class="btn" data-action="goto" data-page="config">← Back to configuration</button>
     <button class="btn" data-action="new">Start new configuration</button></div>`;
   if (rows.some(r => !r.sel)) return `${head}<div class="card"><p class="warn-text">The configuration is incomplete: select a feasible alternative for every stage.</p></div>${nav}`;
 
   const req = deriveRequirements(state.answers);
-  const ex = pipelineEvidence(rows);
+  const ex = currentExecution(rows);
   const constraints = req.constraints.filter(isPipelineConstraint);
+  const previous = previousExecutions();
   return `${head}
   <div class="card">
-    ${activityHead(6, 'Execution feedback', 'Measurements of the selected configuration, per stage and for the complete pipeline, recorded as evaluation evidence.')}
-
-    <div class="label">Stage selections</div>
-    <div class="table-wrap flat"><table class="alts">
-      <thead><tr><th>Stage</th><th>Selected alternative</th><th>Response time</th><th>Cost</th><th>Sample size</th></tr></thead>
-      <tbody>${rows.map(({ stage, sel }) => {
-        const model = selectedModel(stage.id, sel.alt), ev = stageEvidence(stage.id, sel.alt, model);
-        return `<tr><th>${stage.name}</th><td>${altLabel(sel.alt)}${model ? ` <span class="muted small">· ${model.name}</span>` : ''}</td>
-          ${ev ? `<td>${fmtTime(ev.time)}</td><td>${fmtTokens(ev.tokens)} tokens</td><td>n = ${ev.sample}</td>`
-               : '<td colspan="3" class="muted">Not executed yet</td>'}</tr>`;
-      }).join('')}</tbody>
-    </table></div>
-
-    <div class="label">Complete pipeline</div>
-    ${ex ? `
-    <div class="table-wrap flat"><table class="alts">
-      <thead><tr><th>Criterion</th><th>Measured value</th><th>Measure</th><th>Sample size</th></tr></thead>
-      <tbody>
-        ${['time', 'tokens', 'intent', 'engagement', 'accuracy', 'remapped', 'notMatched'].map(k => {
-          const v = ex.pipeline[k], m = MEASURES[k];
-          const val = k === 'time' ? fmtTime(v) : k === 'tokens' ? fmtTokens(v) + ' tokens' : v.toFixed(2) + (m.unit === '0–1' ? '' : ' ' + m.unit);
-          return `<tr><th>${m.name}</th><td>${val}</td><td class="muted small">${m.how}${m.unit === '0–1' ? ', scale 0–1' : ''}</td><td>n = ${ex.sample}</td></tr>`;
-        }).join('')}
-      </tbody>
-    </table></div>
-    <p class="small muted">Execution: ${ex.name}.</p>`
-    : '<p class="muted">The selected configuration has not been executed yet: no measurement of the complete pipeline is available.</p>'}
+    ${activityHead(6, 'Execution feedback', `Measurements of pipeline version v${state.version}, per stage and for the complete pipeline, recorded as evaluation evidence.`)}
+    ${ex ? executionTables(ex)
+         : `<p class="warn-text">Pipeline version v${state.version} has not been executed yet: generate its configuration file and run it with the framework.
+            Its measurements will appear here.</p>`}
 
     <div class="label">Constraints on the complete pipeline</div>
     ${constraints.length ? `<ul class="req-list">${constraints.map(c => {
@@ -763,9 +883,14 @@ function viewMonitoring() {
       return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
     }).join('')}</ul>` : '<p class="muted small">None</p>'}
 
-    ${todo('Revise the expected performance of the executed alternatives with the measured values (provenance: measured).')}
-    ${todo('Derive a new pipeline version: revise stage selections or answers.')}
-  </div>${nav}`;
+    ${ex ? revisionSection(rows, ex) : ''}
+  </div>
+
+  ${previous.length ? `
+  <div class="card">
+    <div class="card-head"><h2>Previous versions</h2><span class="muted">Measurements already applied to the expected performance</span></div>
+    ${previous.map(p => `<details class="previous"><summary>Pipeline version v${p.version} · ${p.name}</summary>${executionTables(p)}</details>`).join('')}
+  </div>` : ''}${nav}`;
 }
 
 // =====================================================================
@@ -790,6 +915,7 @@ document.addEventListener('click', e => {
   }
   else if (a === 'yaml') { state.showYaml = !state.showYaml; $('#selection').innerHTML = selectionSection(); }
   else if (a === 'download-yaml') downloadYaml();
+  else if (a === 'derive') deriveVersion();
   else if (a === 'copy-yaml') {
     navigator.clipboard.writeText(yamlText(currentConfiguration()))
       .then(() => { el.textContent = 'Copied'; setTimeout(() => { el.textContent = 'Copy'; }, 1500); })
@@ -828,6 +954,10 @@ document.addEventListener('change', e => {
     const current = (state.selections[stage] || '').split('-').pop();
     state.selections[stage] = (row.alts.find(a => a.deployment === current) || row.alt).kind;
     $('#selection').innerHTML = selectionSection();
+  } else if (a === 'revise') {
+    const { stage, variant, crit } = e.target.dataset;
+    const byVariant = (state.draft[stage] = state.draft[stage] || {});
+    (byVariant[variant] = byVariant[variant] || {})[crit] = e.target.value;
   } else if (a === 'deployment') {
     state.selections[e.target.dataset.stage] = e.target.value;
     $('#selection').innerHTML = selectionSection();

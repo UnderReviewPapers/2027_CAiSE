@@ -1,21 +1,22 @@
 // =====================================================================
 // Execution results (Evaluation Evidence), used by execution feedback.
 // Each execution records the configuration that was run and the measured
-// values, with the sample size on which they are computed.
+// values, with the sample size on which they are computed. All values refer
+// to the movie scenario (9 queries) and are valid only in that context.
 //
-// Movie scenario, selected configuration (paper, case study), 9 queries:
-//   - per stage: average time and tokens per request, from
-//     framework/out/computed_results/METRICS_out_results_Scenario_2.json
-//   - pipeline: time and tokens are the sums of the stage values;
-//     intent recognition, engagement, accuracy and catalogue grounding are
-//     the values reported in the paper.
+// role: 'execution' - an execution of a pipeline version designed with the demo (version):
+//                     its measurements update the expected performance of the
+//                     executed alternatives (provenance: measured);
+//       'reference' - executions of homogeneous pipelines, one per family, run once
+//                     to calibrate the scale: they give the highest value observed
+//                     for each stage, used to normalise response time and cost.
+//
 // =====================================================================
 
 const EXECUTIONS = [
   {
-    id: 'movie-selected',
+    id: 'movie-selected', role: 'execution', scenario: 'movie', version: 1,   // pipeline version executed
     name: 'Selected configuration of the movie scenario',
-    scenario: 'movie',                          // measurements are valid only in their context
     sample: 9,                                   // recommendation requests
     stages: {
       input:      { component: 'input_parser.agent',     model: 'openai.gpt-oss-120b', time: 1.6025, tokens: 844.6 },
@@ -29,16 +30,58 @@ const EXECUTIONS = [
       intent: 0.87, engagement: 1.00, accuracy: 0.56,
       remapped: 1.33, notMatched: 0.44
     }
+  },
+
+  // ---------- Reference executions (homogeneous pipelines) ----------
+  {
+    id: 'ref-traditional', role: 'reference', scenario: 'movie', name: 'Traditional pipeline', sample: 9,
+    stages: {
+      input:      { component: 'input_parser.rule_based',          model: null, time: 0.0002, tokens: 0 },
+      candidates: { component: 'generator.traditional',            model: null, time: 0.0069, tokens: 0 },
+      scoring:    { component: 'scorer.traditional',               model: null, time: 0.0031, tokens: 0 },
+      ranking:    { component: 'ranker.traditional',               model: null, time: 0.0012, tokens: 0 },
+      response:   { component: 'output_generator.simple_response', model: null, time: 0.0058, tokens: 0 }
+    }
+  },
+  {
+    id: 'ref-slm', role: 'reference', scenario: 'movie', name: 'SLM direct pipeline', sample: 9,
+    stages: {
+      input:      { component: 'input_parser.llm',     model: 'mistral.ministral-3-8b-instruct', time: 0.3835, tokens: 304.1 },
+      candidates: { component: 'generator.llm',        model: 'mistral.ministral-3-8b-instruct', time: 2.1961, tokens: 558.8 },
+      scoring:    { component: 'scorer.llm',           model: 'mistral.ministral-3-8b-instruct', time: 4.1867, tokens: 2314.9 },
+      ranking:    { component: 'ranker.llm',           model: 'mistral.ministral-3-8b-instruct', time: 2.2620, tokens: 1154.3 },
+      response:   { component: 'output_generator.llm', model: 'mistral.ministral-3-8b-instruct', time: 5.4804, tokens: 1878.7 }
+    }
+  },
+  {
+    id: 'ref-llm', role: 'reference', scenario: 'movie', name: 'LLM direct pipeline', sample: 9,
+    stages: {
+      input:      { component: 'input_parser.llm',     model: 'openai.gpt-oss-120b', time: 1.2398, tokens: 566.6 },
+      candidates: { component: 'generator.llm',        model: 'openai.gpt-oss-120b', time: 2.9145, tokens: 1035.2 },
+      scoring:    { component: 'scorer.llm',           model: 'openai.gpt-oss-120b', time: 7.1815, tokens: 3642.1 },
+      ranking:    { component: 'ranker.llm',           model: 'openai.gpt-oss-120b', time: 3.5294, tokens: 1734.2 },
+      response:   { component: 'output_generator.llm', model: 'openai.gpt-oss-120b', time: 4.1505, tokens: 1988.2 }
+    }
+  },
+  {
+    id: 'ref-agent', role: 'reference', scenario: 'movie', name: 'LLM agentic pipeline', sample: 9,
+    stages: {
+      input:      { component: 'input_parser.agent',     model: 'openai.gpt-oss-120b', time: 1.7579,  tokens: 949.2 },
+      candidates: { component: 'generator.agent',        model: 'openai.gpt-oss-120b', time: 6.5958,  tokens: 10654.2 },
+      scoring:    { component: 'scorer.agent',           model: 'openai.gpt-oss-120b', time: 10.2181, tokens: 6475.8 },
+      ranking:    { component: 'ranker.agent',           model: 'openai.gpt-oss-120b', time: 8.3183,  tokens: 5603.8 },
+      response:   { component: 'output_generator.agent', model: 'openai.gpt-oss-120b', time: 5.2952,  tokens: 2055.1 }
+    }
   }
 ];
 
 // How each measure is obtained (shown next to the values).
 const MEASURES = {
-  time:       { name: 'Response time',      unit: 's',               how: 'Average execution time per request' },
-  tokens:     { name: 'Cost',               unit: 'tokens',          how: 'Average input and output tokens per request' },
-  intent:     { name: 'Intent recognition', unit: '0–1',             how: 'LLM-as-a-judge (DeepEval)' },
-  engagement: { name: 'Engagement',         unit: '0–1',             how: 'LLM-as-a-judge (DeepEval)' },
-  accuracy:   { name: 'Accuracy',           unit: '0–1',             how: 'LLM-as-a-judge (DeepEval)' },
-  remapped:   { name: 'Catalogue grounding', unit: 'items per response', how: 'Items remapped to a catalogue item' },
-  notMatched: { name: 'Catalogue grounding', unit: 'items per response', how: 'Items not found in the catalogue' }
+  time:       { name: 'Response time',       unit: 's',      how: 'Average execution time per request' },
+  tokens:     { name: 'Cost',                unit: 'tokens', how: 'Average input and output tokens per request' },
+  intent:     { name: 'Intent recognition',  unit: '0–1',    how: 'LLM-as-a-judge (DeepEval)' },
+  engagement: { name: 'Engagement',          unit: '0–1',    how: 'LLM-as-a-judge (DeepEval)' },
+  accuracy:   { name: 'Accuracy',            unit: '0–1',    how: 'LLM-as-a-judge (DeepEval)' },
+  remapped:   { name: 'Catalogue grounding', unit: 'items',  how: 'Items remapped to a catalogue item' },
+  notMatched: { name: 'Catalogue grounding', unit: 'items',  how: 'Items not found in the catalogue' }
 };

@@ -117,12 +117,13 @@ for (const variant of VARIANTS) {
   }
 }
 
-// Provenance of the expected performance (conceptual model): how the values were obtained.
-// Before any execution, all values are the designer's estimates; after execution feedback
-// they can be replaced by values aggregated from measurements.
+// Provenance of the expected performance (conceptual model): how a value was obtained.
+// Before any execution all values are estimated. After an execution, response time and cost of the executed
+// alternatives are measured; the designer may revise the other estimates in the light of the results.
 const PROVENANCE = {
-  kind: 'Estimated',
-  method: 'Expert judgement of the designer, on the qualitative scale VL–VH'
+  Estimated: 'Expert judgement of the designer, on the qualitative scale VL–VH',
+  Revised:   'Estimate revised by the designer in the light of execution results',
+  Measured:  'Measured in an execution of the configuration, normalised'
 };
 
 // Stage-specific part of each alternative.

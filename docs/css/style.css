@@ -382,3 +382,5 @@ table.selection select { font: inherit; font-size: 12.5px; padding: 5px 7px; bor
 .verdict.v-ok { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-dark); }
 .verdict.v-violated { background: var(--bad-soft); border-color: var(--bad-line); color: var(--bad); }
 .verdict.v-unknown { background: var(--off-soft); color: var(--off); }
+table.revision select { font: inherit; font-size: 12.5px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 7px; background: #fff; }
+.previous summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
