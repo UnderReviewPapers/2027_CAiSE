@@ -400,9 +400,10 @@ const SCENARIOS = {
     example: 'I was recently diagnosed with type 2 diabetes. Can you recommend a reliable, easy-to-understand guide about healthy eating and physical activity?',
     context: { project: 'Patient education assistant', domain: 'Healthcare', items: 'Educational resources validated by the organisation',
                users: 'Patients of the healthcare organisation' },
-    // TODO: healthcare answers still to be reviewed.
-    answers: { interaction: 'freeform', presentation: 'description', impact: 'serious', catalogue: 'mandatory',
-               histories: 'part', catalogue_info: 'ratings', infra: 'slm', sensitive: 'internal',
-               speed: 'seconds', max_time: 'no', budget: 'moderate' }
+    // Priorities as in the paper's table, except intent recognition (Medium: the example request is free-form).
+    // Histories, catalogue information and infrastructure are assumptions (not stated in the paper).
+    answers: { interaction: 'freeform', presentation: 'fixed', impact: 'serious', catalogue: 'mandatory',
+               histories: 'part', catalogue_info: 'attributes', infra: 'slm', sensitive: 'internal',
+               speed: 'longer', max_time: 'no', budget: 'flexible' }
   }
 };
