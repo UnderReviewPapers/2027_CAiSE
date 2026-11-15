@@ -274,12 +274,6 @@ function scoreBar(score) {
   return `<span class="level"><span class="bar wide"><span style="width:${score * 100}%"></span></span>${score.toFixed(3)}</span>`;
 }
 
-function pageHead(eyebrow, title, text) {
-  return `<section class="page-head"><div>
-    <div class="eyebrow">${eyebrow}</div>${title ? `<h1>${title}</h1>` : ''}<p>${text}</p>
-  </div></section>`;
-}
-
 // Numbered section header of a design activity.
 function activityHead(n, title, text) {
   return `<div class="activity-head"><span class="activity-num">${n}</span><div><h2>${title}</h2><p class="muted">${text}</p></div></div>`;
@@ -293,7 +287,6 @@ function todo(text) { return `<div class="todo-box">${chip('to do', 'todo')} ${t
 function viewHome() {
   return `
   <section class="hero">
-    <div class="eyebrow">Model-based design of recommender systems</div>
     <h1>Recommending the Recommender</h1>
     <p>Design a recommendation pipeline stage by stage. Answer a few questions about your application, see which
        traditional or language-model-based alternatives satisfy its constraints and best fit its priorities,
@@ -337,18 +330,6 @@ function viewHome() {
           </div>
         </div>`).join("")}
     </div>
-  </section>
-
-  <section class="card">
-    <div class="card-head"><h2>Design activities</h2></div>
-    <ol class="activity-list">
-      <li><strong>Scenario characterisation</strong> — the designer answers predefined questions.</li>
-      <li><strong>Requirements specification</strong> — answers imply hard constraints and preferences over criteria.</li>
-      <li><strong>Alternative identification</strong> — alternatives whose required resources are available.</li>
-      <li><strong>Alternative comparison</strong> — exclude those violating constraints, rank the feasible ones.</li>
-      <li><strong>Configuration selection</strong> — the designer chooses one alternative per stage; configuration file.</li>
-      <li><strong>Monitoring and review</strong> — measurements validate or revise the design.</li>
-    </ol>
   </section>`;
 }
 
@@ -358,19 +339,30 @@ function viewHome() {
 function viewDesignSpace() {
   const stage = stageById(state.exploreStage);
   return `
-  ${pageHead('Design space', 'The recommendation pipeline',
-    `A recommender system is designed as a pipeline of <strong>five stages</strong>. Each stage can be implemented by a
-     traditional technique or by a language model, small or large, deployed internally or externally and executed directly
-     or as an agent. This page shows every alternative the framework implements.`)}
+  <div class="page-top"></div>
+
+  <div class="intro-grid">
+  <section class="card">
+    <div class="card-head"><h2>Design activities</h2></div>
+    <ol class="activity-list">
+      <li><strong>Scenario characterisation</strong> — the designer answers predefined questions.</li>
+      <li><strong>Requirements specification</strong> — answers imply hard constraints and preferences over criteria.</li>
+      <li><strong>Alternative identification</strong> — alternatives violating a hard constraint are excluded.</li>
+      <li><strong>Alternative comparison</strong> — feasible alternatives are ranked according to the preferences.</li>
+      <li><strong>Configuration selection</strong> — one alternative per stage, with its model and parameters; configuration file.</li>
+      <li><strong>Monitoring and review</strong> — measurements verify the constraints and update the expected performance.</li>
+    </ol>
+  </section>
 
   <section class="card">
     <div class="card-head"><h2>Design-space dimensions</h2></div>
     <div class="dims">
-      <div><h4>Component type</h4><p>Traditional technique, small LM or large LM. SLMs need fewer resources; LLMs handle complex tasks at higher time and cost.</p></div>
-      <div><h4>Deployment</h4><p>Internal (organisation-controlled infrastructure) or external provider. Decided per stage, it determines where user data flow.</p></div>
-      <div><h4>Execution</h4><p>For LMs: direct invocation, or agentic execution that can call tools such as Text-to-SQL on the catalogue.</p></div>
+      <div><h4>Component type</h4><p>Traditional, SLM or LLM</p></div>
+      <div><h4>Deployment</h4><p>Internal or external provider: where user data flow</p></div>
+      <div><h4>Execution</h4><p>Direct, or agentic with tools (e.g. Text-to-SQL)</p></div>
     </div>
   </section>
+  </div>
 
   <section class="card">
     <div class="card-head"><h2>Stages and alternatives</h2><span class="muted">Select a stage, then an alternative</span></div>
@@ -378,9 +370,8 @@ function viewDesignSpace() {
       ${STAGES.map((s, i) => `
         ${i ? '<span class="arrow" aria-hidden="true">→</span>' : ''}
         <button class="stage-box ${s.id === stage.id ? 'selected' : ''}" data-action="explore" data-stage="${s.id}">
-          <span class="stage-idx">Stage ${i + 1}</span>
-          <strong>${s.name}</strong>
-          <small>${s.task} → <em>${s.output}</em></small>
+          <strong><span class="stage-num">${i + 1}</span>${s.name}</strong>
+          <small>→ ${s.output}</small>
         </button>`).join('')}
     </div>
 
@@ -395,8 +386,8 @@ function viewDesignSpace() {
       <div>${altMatrix(stage.id)}</div>
       <div>${altDetail(getAlternative(stage.id, state.exploreAlt))}</div>
     </div>
-    ${variantTable(stage.id)}
   </section>
+
 
   <div class="nav-buttons"><button class="btn" data-action="goto" data-page="home">← Home</button>
     <button class="btn primary" data-action="new">Start new configuration →</button></div>`;
@@ -407,8 +398,7 @@ function altMatrix(stageId) {
   const cell = (variant, deployment) => {
     const alt = getAlternative(stageId, `${variant}-${deployment}`);
     return `<button class="matrix-cell ${alt.kind === state.exploreAlt ? 'selected' : ''}" data-action="explore-alt" data-kind="${alt.kind}">
-              <code>${alt.component}</code>
-              ${alt.model ? `<small>${alt.model.name}</small>` : ''}
+              <small>${alt.model ? alt.model.name : 'No language model'}</small>
             </button>`;
   };
   return `
@@ -417,46 +407,35 @@ function altMatrix(stageId) {
     <div></div><div class="matrix-col">Internal</div><div class="matrix-col">External</div>
     ${VARIANTS.map(v => `<div class="matrix-row">${variantLabel(v)}</div>${cell(v, 'internal')}${cell(v, 'external')}`).join('')}
   </div>
-  <p class="small muted">Only the combinations implemented in the framework are shown: traditional techniques have no agentic
-     execution, and agentic execution is available with the LLM.</p>`;
+  <p class="small muted">Traditional techniques have no agentic execution. Further techniques and models can be added to the framework.</p>`;
 }
 
-// Details of one alternative: characteristics, component, requirements, expected performance.
+// Details of one alternative: technique, language model, characteristics and expected performance.
 function altDetail(alt) {
   const none = '<span class="muted">—</span>';
   return `
   <div class="alt-detail">
-    <div class="alt-detail-head"><h3>${altLabel(alt)}</h3><div>${dimensionChips(alt)}</div></div>
+    <div class="alt-detail-head"><h3>${[DIMENSIONS.type.values[alt.type], alt.type === 'traditional' ? null : alt.execution, alt.deployment].filter(Boolean).join(' · ')}</h3></div>
     <p>${esc(alt.technique)}</p>
+    <div class="alt-columns"><div>
     <div class="alt-facts">
-      <div><span class="fact-label">Framework component</span><code>${alt.component}</code>${alt.model ? ` <span class="muted">with</span> <code>${alt.model.id}</code>` : ''}</div>
-      <div><span class="fact-label">Capabilities</span>${alt.capabilities.map(c => chip(CAPABILITIES[c])).join(' ') || none}</div>
-      <div><span class="fact-label">Required resources</span>${alt.requiredResources.map(r => chip(REQUIRED_RESOURCES[r].name)).join(' ') || none}</div>
+      <div><span class="fact-label">Language model</span>${alt.model ? alt.model.name : none}</div>
     </div>
+    <!-- Characteristics: what the alternative supports and what it requires (its dimensions are in the title) -->
+    <div class="alt-facts characteristics">
+      <div><span class="fact-label">Supports</span>${alt.capabilities.map(c => chip(CAPABILITIES[c])).join(' ') || none}</div>
+      <div><span class="fact-label">Requires</span>${alt.requiredResources.map(r => chip(REQUIRED_RESOURCES[r].name)).join(' ') || none}</div>
+    </div>
+    </div><div>
     <div class="label">Expected performance <span class="label-note">· estimated · higher is better</span></div>
     <ul class="perf-list">
       ${STAGE_CRITERIA[alt.stage].map(c => `
         <li>
-          <span>${criterionById(c).name}</span>${levelBadge(alt.performance[c])}<span class="muted small">${LEVEL_NAMES[alt.performance[c]]}</span>
+          <span>${criterionById(c).name}</span>${levelBadge(alt.performance[c])}
         </li>`).join('')}
     </ul>
+    </div></div>
   </div>`;
-}
-
-// Side-by-side comparison of the variants (deployment does not change the estimates).
-function variantTable(stageId) {
-  const alts = VARIANTS.map(v => getAlternative(stageId, `${v}-internal`));
-  return `
-  <details class="rationale compare">
-    <summary>Compare expected performance across variants</summary>
-    <div class="table-wrap flat"><table class="alts">
-      <thead><tr><th>Criterion</th>${alts.map(a => `<th>${variantLabel(a.variant)}</th>`).join('')}</tr></thead>
-      <tbody>${STAGE_CRITERIA[stageId].map(c => `
-        <tr><th>${criterionById(c).name}</th>${alts.map(a => `<td>${levelBadge(a.performance[c])}</td>`).join('')}</tr>`).join('')}
-      </tbody>
-    </table></div>
-    <p class="small muted pad">Internal and external deployment share the same estimates; deployment matters for privacy constraints and required resources.</p>
-  </details>`;
 }
 
 // =====================================================================
@@ -478,11 +457,8 @@ function contextCard() {
 }
 
 function viewConfiguration() {
-  const sc = state.scenario && SCENARIOS[state.scenario];
   return `
-  ${pageHead(`${sc ? `Example loaded · ${sc.name}` : 'New configuration'} · Pipeline version v${state.version}`, 'Configuration',
-    `${sc ? 'Answers are loaded from the example; change any of them to see the effect.' : 'Answer the questions to characterise your application.'}
-     The design activities below update as you answer.`)}
+  <div class="page-top"></div>
 
   <section class="activity-section">
     <div class="two-col">
@@ -845,6 +821,49 @@ function revisionSection(rows, ex) {
     </div>`;
 }
 
+// ---------- Diagnostics ----------
+// Few automatic remarks on the execution, shown only when they apply:
+//   - the stage with the largest share of response time and of cost;
+//   - estimates that differ from the measurement by at least one level of the scale (largest two);
+//   - for each violated constraint, where to act (or the requirement to revise when it cannot be met).
+function diagnosticsBox(rows, ex, req) {
+  const shares = [], gaps = [], hints = [];
+  const total = k => STAGES.reduce((sum, st) => sum + ex.stages[st.id][k], 0);
+  const dominant = k => STAGES.reduce((a, b) => ex.stages[b.id][k] > ex.stages[a.id][k] ? b : a);
+  for (const [k, name] of [['time', 'Response time'], ['tokens', 'Cost']]) {
+    const st = dominant(k), share = total(k) ? ex.stages[st.id][k] / total(k) : 0;
+    const of = k === 'time' ? 'total time' : 'total cost';
+    if (share > 0) shares.push(`<li><span>${name}</span><span><strong>${st.name}</strong> · ${Math.round(share * 100)}% of ${of}</span></li>`);
+  }
+  const deviations = [];
+  for (const { stage, sel } of rows)
+    for (const c of Object.keys(MEASURED_CRITERIA)) {
+      const now = expectedPerformance(sel.alt, c), next = expectedPerformance(sel.alt, c, state.version);
+      if (now && next && now.kind !== 'Measured' && Math.abs(next.value - now.value) >= 0.2 - 1e-9)
+        deviations.push({ stage, c, now, next, gap: Math.abs(next.value - now.value) });
+    }
+  deviations.sort((a, b) => b.gap - a.gap).slice(0, 2).forEach(d =>
+    gaps.push(`<li><span>${d.stage.name}<br><span class="muted small">${criterionById(d.c).name}</span></span>
+      <span class="gap">${expectedCell(d.c, d.now)} → ${expectedCell(d.c, d.next)}</span></li>`));
+  for (const c of req.constraints) {
+    if (c.pipeline === 'time' && ex.pipeline.time > c.max) {
+      // Fastest pipeline observed: the fastest measured alternative of every stage.
+      const fastest = STAGES.reduce((sum, st) => sum + Math.min(...contextExecutions(['execution', 'reference']).map(e => e.stages[st.id]).filter(Boolean).map(x => x.time)), 0);
+      hints.push(fastest > c.max ? `<li>Revise the maximum response time: ${c.max} s cannot be met</li>` : `<li>Revise <strong>${dominant('time').name}</strong> to reduce response time</li>`);
+    }
+    if (c.verify && ex.pipeline[c.verify.measure] > c.verify.max)
+      hints.push(`<li>Revise <strong>${c.stages.map(id => stageById(id).name).join(', ')}</strong>: ${esc(c.text.toLowerCase())}</li>`);
+  }
+  return `
+      <div class="subcard">
+        <div class="subcard-head"><h3>Diagnostics</h3><span class="muted small">automatic remarks on the execution</span></div>
+        <div class="label pad-label">Largest share of the pipeline</div>
+        <ul class="diag-rows">${shares.join('')}</ul>
+        ${gaps.length ? `<div class="label pad-label">Estimates far from the measurement</div><ul class="diag-rows">${gaps.join('')}</ul>` : ''}
+        ${hints.length ? `<div class="label pad-label">Review suggestions</div><ul class="diag-list">${hints.join('')}</ul>` : ''}
+      </div>`;
+}
+
 // Stage-level constraints: satisfied by design (the selected alternatives are feasible); those with a
 // measurable condition are also verified on the measured values of the complete pipeline.
 function verifyStageConstraint(c, ex) {
@@ -869,8 +888,7 @@ function verifyPipelineConstraint(c, ex) {
 // =====================================================================
 function viewMonitoring() {
   const rows = currentConfiguration();
-  const head = `
-  ${pageHead(`Design activity 6 · Pipeline version v${state.version}`, '', 'Executing the selected configuration closes the design loop.')}`;
+  const head = '<div class="page-top"></div>';   // no page heading: title and text are in the activity box
   const nav = `
   <div class="nav-buttons"><button class="btn" data-action="goto" data-page="config">← Back to configuration</button>
     <button class="btn" data-action="new">Start new configuration</button></div>`;
@@ -889,9 +907,9 @@ function viewMonitoring() {
          : `<p class="warn-text">Pipeline version v${state.version} has not been executed yet: generate its configuration file and run it with the framework.
             Its measurements will appear here.</p>`}
 
-    <div class="execution-grid constraints-grid">
+    <div class="execution-grid constraints-grid ${ex ? 'three' : ''}">
       <div class="subcard">
-        <div class="subcard-head"><h3>Constraints on single stages</h3><span class="muted small">verified in alternative identification and, if measurable, on the measured values</span></div>
+        <div class="subcard-head"><h3>Constraints on single stages</h3><span class="muted small">verified in alternative identification.</span></div>
         ${stageConstraints.length ? `<ul class="req-list pad">${stageConstraints.map(c => {
           const v = verifyStageConstraint(c, ex);
           return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
@@ -905,6 +923,7 @@ function viewMonitoring() {
           return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
         }).join('')}</ul>` : '<p class="muted small pad">None</p>'}
       </div>
+      ${ex ? diagnosticsBox(rows, ex, req) : ''}
     </div>
 
     ${ex ? revisionSection(rows, ex) : ''}

@@ -76,9 +76,9 @@ p { margin: .4rem 0; color: var(--text); }
 .subactivity { margin-top: 26px; padding-top: 22px; border-top: 1px dashed var(--border); }
 
 /* Landing page */
-.hero { padding: 34px 0 26px; max-width: 760px; }
+.hero { padding: 14px 0 10px; max-width: 760px; }
 .hero h1 { font-size: 34px; }
-.hero p { font-size: 15px; color: var(--muted); margin: 12px 0 20px; }
+.hero p { font-size: 15px; color: var(--muted); margin: 10px 0 8px; }
 .activity-list { margin: 0; padding-left: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 28px; font-size: 13px; }
 .activity-list li { color: var(--text); }
 
@@ -192,7 +192,7 @@ code { font: 11.5px ui-monospace, SFMono-Regular, Consolas, monospace; backgroun
 .alt-detail > p { font-size: 13px; margin: 8px 0 12px; }
 .alt-facts { display: grid; gap: 10px; font-size: 12.5px; }
 .perf-list { list-style: none; margin: 0; padding: 0; }
-.perf-list li { display: grid; grid-template-columns: 150px auto 1fr; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-size: 13px; cursor: help; }
+.perf-list li { display: grid; grid-template-columns: 150px auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-size: 13px; }
 .perf-list li:last-child { border-bottom: 0; }
 
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
@@ -412,3 +412,38 @@ table.revision th:nth-child(3) { width: 43%; }
 /* Sub-section of a design activity (e.g. update of the expected performance in monitoring) */
 .section-head { display: flex; align-items: baseline; gap: 12px; margin: 26px 0 6px; padding-top: 20px; border-top: 1px solid var(--border); }
 .section-head h3 { margin: 0; font-size: 15.5px; color: var(--ink); letter-spacing: -.2px; }
+
+/* ---------- Monitoring: diagnostics ---------- */
+.constraints-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1000px) { .constraints-grid.three { grid-template-columns: 1fr; } }
+.diag-list { margin: 0; padding: 10px 14px 4px 30px; font-size: 12.5px; }
+.diag-list li { margin-bottom: 6px; }
+.pad-label { padding: 0 14px; margin-top: 6px; }
+/* Titles of the constraint and diagnostics boxes: description below the title */
+.constraints-grid .subcard-head { flex-direction: column; align-items: flex-start; gap: 2px; }
+.diag-rows { list-style: none; margin: 0; padding: 4px 14px 6px; font-size: 12.5px; }
+.diag-rows li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--border-soft); }
+.diag-rows li:last-child { border-bottom: 0; }
+.diag-rows .gap { white-space: nowrap; }
+.pad-label { margin-top: 10px; }
+.page-top { height: 24px; }
+/* Design space: stage number on the left of the stage name */
+.stage-num { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 6px; border-radius: 50%; background: transparent; border: 1.5px solid var(--accent); color: var(--accent); font-size: 10.5px; font-weight: 800; vertical-align: 1px; box-sizing: border-box; }
+/* Design space: design activities and dimensions side by side */
+.intro-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+.intro-grid .card { margin-bottom: 18px; }
+.intro-grid .activity-list { grid-template-columns: 1fr; }
+.intro-grid .dims { grid-template-columns: 1fr; gap: 10px; }
+@media (max-width: 1000px) { .intro-grid { grid-template-columns: 1fr; gap: 0; } }
+/* Compact dimensions: one row per dimension, no inner boxes */
+.intro-grid .dims { gap: 0; }
+.intro-grid .dims > div { border: 0; border-bottom: 1px solid var(--border-soft); border-radius: 0; background: transparent; padding: 7px 0; }
+.intro-grid .dims > div:last-child { border-bottom: 0; }
+.intro-grid .dims h4 { margin: 0 0 1px; font-size: 13px; }
+.intro-grid .activity-list { gap: 4px; }
+/* Alternative detail: characteristics on the left, expected performance on the right */
+.alt-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.alt-columns > div > .label:first-child { margin-top: 0; }
+.alt-columns .characteristics { margin-top: 10px; }   /* same spacing as between the other facts */
+.alt-columns .perf-list li { grid-template-columns: minmax(0, 1fr) auto; }
+@media (max-width: 760px) { .alt-columns { grid-template-columns: 1fr; } }

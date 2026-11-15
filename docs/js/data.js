@@ -22,7 +22,7 @@ const STAGES = [
     task: 'Estimates relevance to the request', output: 'scored candidates',
     traditional: 'Similarity measures, predicted ratings, specialised learning models',
     capabilities: 'Assess relevance through semantic relationships between requests and item descriptions',
-    limitations: 'Potentially higher response time and cost; sensitivity to prompting' },
+    limitations: 'Potentially higher response time and cost' },
   { id: 'ranking', name: 'Ranking',
     task: 'Orders candidates', output: 'ranked list',
     traditional: 'Score-based or predefined ranking strategies',
@@ -224,9 +224,10 @@ const STAGE_ALTERNATIVES = {
   }
 };
 
+// Capabilities: what an alternative supports (characteristics, shown as "Supports ...").
 const CAPABILITIES = {
-  freeform: 'Free-form request interpretation',
-  catalogue_access: 'Catalogue access (tools)',
+  freeform: 'Free-form requests',
+  catalogue_access: 'Catalogue access',
   explanations: 'Natural-language explanations'
 };
 
