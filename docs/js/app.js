@@ -13,7 +13,7 @@ const PAGES = [
   { id: 'home',    name: 'Home' },
   { id: 'space',   name: 'Design space' },
   { id: 'config',  name: 'Configuration' },
-  { id: 'monitor', name: 'Monitoring' }
+  { id: 'monitor', name: 'Monitoring<br>and Review' }   // design activity 6, on two lines
 ];
 
 // ---------- State ----------
@@ -276,7 +276,7 @@ function scoreBar(score) {
 
 function pageHead(eyebrow, title, text) {
   return `<section class="page-head"><div>
-    <div class="eyebrow">${eyebrow}</div><h1>${title}</h1><p>${text}</p>
+    <div class="eyebrow">${eyebrow}</div>${title ? `<h1>${title}</h1>` : ''}<p>${text}</p>
   </div></section>`;
 }
 
@@ -347,7 +347,7 @@ function viewHome() {
       <li><strong>Alternative identification</strong> — alternatives whose required resources are available.</li>
       <li><strong>Alternative comparison</strong> — exclude those violating constraints, rank the feasible ones.</li>
       <li><strong>Configuration selection</strong> — the designer chooses one alternative per stage; configuration file.</li>
-      <li><strong>Execution feedback</strong> — measurements validate or revise the design.</li>
+      <li><strong>Monitoring and review</strong> — measurements validate or revise the design.</li>
     </ol>
   </section>`;
 }
@@ -777,79 +777,89 @@ const fmtTime = s => (s < 0.01 ? s.toFixed(3) : s.toFixed(2)) + ' s';
 const fmtTokens = t => Math.round(t).toLocaleString('en-US');
 const fmtMeasure = (crit, raw) => crit === 'time' ? fmtTime(raw) : fmtTokens(raw) + ' tokens';
 
-// Measurements of an execution: per stage and for the complete pipeline.
+// An execution: the executed pipeline (left) and the measured values of the criteria (right).
+// Per-stage response time and cost are shown when updating the expected performance.
 function executionTables(ex) {
   return `
-    <div class="label">Stage selections</div>
-    <div class="table-wrap flat"><table class="alts">
-      <thead><tr><th>Stage</th><th>Executed alternative</th><th>Response time</th><th>Cost</th><th>Sample size</th></tr></thead>
-      <tbody>${STAGES.map(stage => {
-        const s = ex.stages[stage.id];
-        return `<tr><th>${stage.name}</th><td>${executedLabel(stage.id, s)}</td>
-          <td>${fmtTime(s.time)}</td><td>${fmtTokens(s.tokens)} tokens</td><td>n = ${ex.sample}</td></tr>`;
-      }).join('')}</tbody>
-    </table></div>
-
-    <div class="label">Complete pipeline</div>
-    <div class="table-wrap flat"><table class="alts">
-      <thead><tr><th>Criterion</th><th>Measured value</th><th>Measure</th><th>Sample size</th></tr></thead>
-      <tbody>
-        ${['time', 'tokens', 'intent', 'engagement', 'accuracy', 'remapped', 'notMatched'].map(k => {
-          const v = ex.pipeline[k], m = MEASURES[k];
-          const val = k === 'time' ? fmtTime(v) : k === 'tokens' ? fmtTokens(v) + ' tokens' : v.toFixed(2) + (m.unit === '0–1' ? '' : ' ' + m.unit);
-          return `<tr><th>${m.name}</th><td>${val}</td><td class="muted small">${m.how}${m.unit === '0–1' ? ', scale 0–1' : ''}</td><td>n = ${ex.sample}</td></tr>`;
-        }).join('')}
-      </tbody>
-    </table></div>`;
+    <div class="execution-grid">
+      <div class="subcard">
+        <div class="subcard-head"><h3>Executed pipeline</h3></div>
+        <div class="table-wrap flat"><table class="alts">
+          <thead><tr><th>Stage</th><th>Executed alternative</th></tr></thead>
+          <tbody>${STAGES.map(stage => `<tr><th>${stage.name}</th><td>${executedLabel(stage.id, ex.stages[stage.id])}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </div>
+      <div class="subcard">
+        <div class="subcard-head"><h3>Measured values</h3><span class="muted small">sample size n = ${ex.sample}</span></div>
+        <div class="table-wrap flat"><table class="alts">
+          <thead><tr><th>Criterion</th><th>Measured value</th><th>Measure</th></tr></thead>
+          <tbody>
+            ${['time', 'tokens', 'intent', 'engagement', 'accuracy', 'remapped', 'notMatched'].map(k => {
+              const v = ex.pipeline[k], m = MEASURES[k];
+              const val = k === 'time' ? fmtTime(v) : k === 'tokens' ? fmtTokens(v) + ' tokens' : v.toFixed(2) + (m.unit === '0–1' ? '' : ' ' + m.unit);
+              return `<tr><th>${m.name}</th><td>${val}</td><td class="muted small">${m.how}${m.unit === '0–1' ? ', scale 0–1' : ''}</td></tr>`;
+            }).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>`;
 }
 
-// Evidence for updating a criterion: the stage measurement (response time, cost)
-// or, for the other criteria, the measurement of the complete pipeline.
-function revisionEvidence(crit, s, ex) {
-  if (crit === 'time') return `${fmtTime(s.time)} <span class="muted small">stage · n = ${ex.sample}</span>`;
-  if (crit === 'cost') return `${fmtTokens(s.tokens)} tokens <span class="muted small">stage · n = ${ex.sample}</span>`;
-  const p = ex.pipeline, n = `<span class="muted small">pipeline · n = ${ex.sample}</span>`;
-  if (crit === 'grounding') return `${p.remapped.toFixed(2)} remapped, ${p.notMatched.toFixed(2)} not matched ${n}`;
-  return `${p[crit].toFixed(2)} ${n}`;
+// Stage measurement of a criterion (response time, cost), shown next to its normalised value.
+function stageMeasure(crit, s) {
+  return crit === 'time' ? fmtTime(s.time) : fmtTokens(s.tokens) + ' tokens';
 }
 
-// Update of the expected performance of the executed alternatives: response time and cost become
-// measured; the other criteria are measured on the complete pipeline and the designer may revise their estimates.
+// Update of the expected performance of the executed alternatives, one box per stage: response time and cost
+// become measured; the other criteria are measured on the complete pipeline and the designer may revise their estimates.
 function revisionSection(rows, ex) {
   const draftOf = (st, v, c) => ((state.draft[st] || {})[v] || {})[c];
   return `
-    <div class="label">Update the expected performance</div>
+    <div class="section-head"><h3>Update the expected performance</h3><span class="muted small">sample size n = ${ex.sample}</span></div>
     <p class="small muted">Response time and cost of the executed alternatives are replaced by their measurements, normalised with respect to
        the highest value observed for the stage.<br> The other criteria are measured on the complete pipeline: the designer may revise their estimates.</p>
-    <div class="table-wrap flat"><table class="alts revision">
-      <thead><tr><th>Criterion</th><th>Expected performance</th><th>Measured</th><th>New value</th></tr></thead>
+    <div class="revision-grid">
       ${rows.map(({ stage, sel }) => {
         const alt = sel.alt, s = ex.stages[stage.id];
-        return `<tbody><tr class="group-row"><th colspan="4">${stage.name} · ${variantLabel(alt.variant)}</th></tr>
-          ${STAGE_CRITERIA[stage.id].map(c => {
-            const ep = expectedPerformance(alt, c), d = draftOf(stage.id, alt.variant, c);
-            const next = expectedPerformance(alt, c, state.version);  // value once the results of this version are applied
-            return `<tr><th>${criterionById(c).name}</th><td>${expectedCell(c, ep)} <span class="muted small">${ep ? ep.kind : ''}</span></td>
-              <td>${revisionEvidence(c, s, ex)}</td>
-              <td>${next && next.kind === 'Measured' ? `${expectedCell(c, next)} <span class="muted small">Measured</span>` : `
-                <select data-action="revise" data-stage="${stage.id}" data-variant="${alt.variant}" data-crit="${c}">
-                  <option value="">Keep ${ep ? ep.level : ''}</option>
-                  ${Object.keys(LEVELS).map(l => `<option value="${l}" ${d === l ? 'selected' : ''}>${l} · ${LEVEL_NAMES[l]}</option>`).join('')}
-                </select>`}</td></tr>`;
-          }).join('')}</tbody>`;
+        return `<div class="subcard">
+          <div class="subcard-head"><h3>${stage.name}</h3><span class="muted small">${variantLabel(alt.variant)}</span></div>
+          <table class="alts revision">
+            <thead><tr><th>Criterion</th><th>Current</th><th>New</th></tr></thead>
+            <tbody>${STAGE_CRITERIA[stage.id].map(c => {
+              const ep = expectedPerformance(alt, c), d = draftOf(stage.id, alt.variant, c);
+              const next = expectedPerformance(alt, c, state.version);  // value once the results of this version are applied
+              return `<tr><th>${criterionById(c).name}</th>
+                <td>${expectedCell(c, ep)}</td>
+                <td>${next && next.kind === 'Measured' ? `${expectedCell(c, next)} <div class="evidence">measured (${stageMeasure(c, s)})</div>` : `
+                  <select data-action="revise" data-stage="${stage.id}" data-variant="${alt.variant}" data-crit="${c}">
+                    <option value="">Keep ${ep ? ep.level : ''}</option>
+                    ${Object.keys(LEVELS).map(l => `<option value="${l}" ${d === l ? 'selected' : ''}>${l}</option>`).join('')}
+                  </select>`}</td></tr>`;
+            }).join('')}</tbody>
+          </table>
+        </div>`;
       }).join('')}
-    </table></div>
+    </div>
     <div class="actions end">
       <button class="btn primary" data-action="derive">Derive pipeline version v${state.version + 1} →</button>
     </div>`;
 }
 
+// Stage-level constraints: satisfied by design (the selected alternatives are feasible); those with a
+// measurable condition are also verified on the measured values of the complete pipeline.
+function verifyStageConstraint(c, ex) {
+  if (!c.verify) return { status: 'ok', text: 'satisfied' };
+  if (!ex) return { status: 'unknown', text: 'not yet measured' };
+  const v = ex.pipeline[c.verify.measure], ok = v <= c.verify.max;
+  return { status: ok ? 'ok' : 'violated', text: `${ok ? 'satisfied' : 'violated'} · ${v.toFixed(2)} not matched` };
+}
+
 // Pipeline-level constraints checked on measured values.
 function verifyPipelineConstraint(c, ex) {
-  if (!ex) return { status: 'unknown', text: 'Not verifiable: this pipeline version has not been executed yet' };
+  if (!ex) return { status: 'unknown', text: 'not yet measured' };
   if (c.pipeline === 'time') {
     const ok = ex.pipeline.time <= c.max;
-    return { status: ok ? 'ok' : 'violated', text: `Measured ${fmtTime(ex.pipeline.time)} (n = ${ex.sample}): ${ok ? 'satisfied' : 'violated'}` };
+    return { status: ok ? 'ok' : 'violated', text: `${ok ? 'satisfied' : 'violated'} · ${fmtTime(ex.pipeline.time)}` };
   }
   return { status: 'unknown', text: 'No measurement for this constraint' };
 }
@@ -860,7 +870,7 @@ function verifyPipelineConstraint(c, ex) {
 function viewMonitoring() {
   const rows = currentConfiguration();
   const head = `
-  ${pageHead(`Design activity 6 · Pipeline version v${state.version}`, 'Monitoring', 'Executing the selected configuration closes the design loop.')}`;
+  ${pageHead(`Design activity 6 · Pipeline version v${state.version}`, '', 'Executing the selected configuration closes the design loop.')}`;
   const nav = `
   <div class="nav-buttons"><button class="btn" data-action="goto" data-page="config">← Back to configuration</button>
     <button class="btn" data-action="new">Start new configuration</button></div>`;
@@ -869,19 +879,33 @@ function viewMonitoring() {
   const req = deriveRequirements(state.answers);
   const ex = currentExecution(rows);
   const constraints = req.constraints.filter(isPipelineConstraint);
+  // Stage-level constraints: the selected alternatives are feasible, so they satisfy them by construction.
+  const stageConstraints = req.constraints.filter(c => !isPipelineConstraint(c));
   const previous = previousExecutions();
   return `${head}
   <div class="card">
-    ${activityHead(6, 'Execution feedback', `Measurements of pipeline version v${state.version}, per stage and for the complete pipeline, recorded as evaluation evidence.`)}
+    ${activityHead(6, 'Monitoring and Review', `Measurements of pipeline version v${state.version}, per stage and for the complete pipeline, recorded as evaluation evidence.`)}
     ${ex ? executionTables(ex)
          : `<p class="warn-text">Pipeline version v${state.version} has not been executed yet: generate its configuration file and run it with the framework.
             Its measurements will appear here.</p>`}
 
-    <div class="label">Constraints on the complete pipeline</div>
-    ${constraints.length ? `<ul class="req-list">${constraints.map(c => {
-      const v = verifyPipelineConstraint(c, ex);
-      return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
-    }).join('')}</ul>` : '<p class="muted small">None</p>'}
+    <div class="execution-grid constraints-grid">
+      <div class="subcard">
+        <div class="subcard-head"><h3>Constraints on single stages</h3><span class="muted small">verified in alternative identification and, if measurable, on the measured values</span></div>
+        ${stageConstraints.length ? `<ul class="req-list pad">${stageConstraints.map(c => {
+          const v = verifyStageConstraint(c, ex);
+          return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
+        }).join('')}</ul>`
+          : '<p class="muted small pad">None</p>'}
+      </div>
+      <div class="subcard">
+        <div class="subcard-head"><h3>Constraints on the complete pipeline</h3><span class="muted small">verified on the measured values</span></div>
+        ${constraints.length ? `<ul class="req-list pad">${constraints.map(c => {
+          const v = verifyPipelineConstraint(c, ex);
+          return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
+        }).join('')}</ul>` : '<p class="muted small pad">None</p>'}
+      </div>
+    </div>
 
     ${ex ? revisionSection(rows, ex) : ''}
   </div>

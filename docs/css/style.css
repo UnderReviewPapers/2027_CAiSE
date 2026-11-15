@@ -55,10 +55,10 @@ p { margin: .4rem 0; color: var(--text); }
 .brandsub { font-size: 10px; color: var(--muted); font-weight: 650; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 3px; }
 
 /* Page navigation */
-.nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 .nav-link {
   background: transparent; border: 0; border-radius: 9px; padding: 9px 14px;
-  cursor: pointer; color: #4f6374; font-weight: 650; font-size: 13px;
+  cursor: pointer; color: #4f6374; font-weight: 650; font-size: 13px; line-height: 1.25; text-align: center;
 }
 .nav-link:hover { background: #f3f7f7; }
 .nav-link.active { background: var(--accent-soft); color: var(--accent-dark); font-weight: 750; }
@@ -384,3 +384,31 @@ table.selection select { font: inherit; font-size: 12.5px; padding: 5px 7px; bor
 .verdict.v-unknown { background: var(--off-soft); color: var(--off); }
 table.revision select { font: inherit; font-size: 12.5px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 7px; background: #fff; }
 .previous summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
+.execution-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 20px; align-items: start; }
+.execution-grid .label:first-child { margin-top: 0; }
+@media (max-width: 1000px) { .execution-grid { grid-template-columns: 1fr; } }
+.subcard { border: 1px solid var(--border); border-radius: 11px; background: #fff; overflow: hidden; }
+.subcard-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 14px; background: var(--off-soft); border-bottom: 1px solid var(--border); }
+.subcard-head h3 { margin: 0; font-size: 13.5px; }
+.execution-grid { margin-top: 4px; align-items: stretch; }   /* both boxes as tall as the taller one */
+.constraints-grid { margin-top: 16px; }
+.subcard .pad { padding: 10px 14px; margin: 0; }
+.subcard .req-list li {   /* neutral in monitoring: the verdict carries the colour */
+  margin-bottom: 6px; border-color: var(--border); background: #fbfcfc; color: var(--ink); font-weight: 600;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+
+/* ---------- Monitoring: update of the expected performance, one box per stage ---------- */
+.revision-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: stretch; }
+table.revision { width: 100%; }
+table.revision th, table.revision td { padding: 7px 10px; }
+table.revision .evidence { font-weight: 500; font-size: 11px; color: var(--muted); white-space: normal; }
+/* Criterion names wrap so that the "New" column has room for the measured note */
+table.revision { table-layout: fixed; }
+table.revision tbody th { white-space: normal; }
+table.revision th:nth-child(1) { width: 27%; }
+table.revision th:nth-child(2) { width: 30%; }
+table.revision th:nth-child(3) { width: 43%; }
+/* Sub-section of a design activity (e.g. update of the expected performance in monitoring) */
+.section-head { display: flex; align-items: baseline; gap: 12px; margin: 26px 0 6px; padding-top: 20px; border-top: 1px solid var(--border); }
+.section-head h3 { margin: 0; font-size: 15.5px; color: var(--ink); letter-spacing: -.2px; }

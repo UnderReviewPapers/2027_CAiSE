@@ -252,6 +252,8 @@ const FRAMEWORK_CONFIG = {
 //         threshold: expected performance on the criterion at least the level (none used yet)
 //   The pipeline-level one is checked in configuration selection, on the complete configuration:
 //     { pipeline: 'time', max: seconds, text }
+//   verify: { measure, max } (optional) - how the constraint is verified on the measured values after
+//     execution, when the characteristic checked at design time only approximates it.
 const QUESTION_GROUPS = [
   { id: 'purpose',  name: 'Recommendation purpose and user interaction' },
   { id: 'data',     name: 'Available data and resources' },
@@ -301,7 +303,8 @@ const QUESTIONS = [
       { id: 'preferably', text: 'Preferably, other items are of little use', preferences: { grounding: 'Medium' } },
       { id: 'strongly',   text: 'Strongly, other items would mislead users', preferences: { grounding: 'High' } },
       { id: 'mandatory',  text: 'Mandatory, only catalogue items are allowed', preferences: { grounding: 'High' },
-        constraints: [{ stages: ['candidates'], requires: { capability: 'catalogue_access' }, text: 'Only catalogue items may be recommended' }] }
+        constraints: [{ stages: ['candidates'], requires: { capability: 'catalogue_access' }, text: 'Only catalogue items may be recommended',
+                        verify: { measure: 'notMatched', max: 0 } }] }
     ] },
 
   // --- Available data and resources ---
