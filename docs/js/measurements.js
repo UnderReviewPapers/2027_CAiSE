@@ -19,11 +19,11 @@ const EXECUTIONS = [
     name: 'Selected configuration of the movie scenario',
     sample: 9,                                   // recommendation requests
     stages: {
-      input:      { component: 'input_parser.agent',     model: 'openai.gpt-oss-120b', time: 1.6025, tokens: 844.6 },
-      candidates: { component: 'generator.agent',        model: 'openai.gpt-oss-120b', time: 5.9766, tokens: 7114.2 },
-      scoring:    { component: 'scorer.llm',             model: 'openai.gpt-oss-120b', time: 8.9357, tokens: 3856.6 },
-      ranking:    { component: 'ranker.traditional',     model: null,                  time: 0.0025, tokens: 0 },
-      response:   { component: 'output_generator.agent', model: 'openai.gpt-oss-120b', time: 6.0656, tokens: 2009.7 }
+      input:      { component: 'input_processing.agent',     model: 'openai.gpt-oss-120b', time: 1.6025, tokens: 844.6 },
+      candidates: { component: 'candidate_selection.agent',        model: 'openai.gpt-oss-120b', time: 5.9766, tokens: 7114.2 },
+      scoring:    { component: 'scoring.llm',             model: 'openai.gpt-oss-120b', time: 8.9357, tokens: 3856.6 },
+      ranking:    { component: 'ranking.traditional',     model: null,                  time: 0.0025, tokens: 0 },
+      response:   { component: 'response_generation.agent', model: 'openai.gpt-oss-120b', time: 6.0656, tokens: 2009.7 }
     },
     pipeline: {
       time: 22.58, tokens: 13825,
@@ -36,41 +36,41 @@ const EXECUTIONS = [
   {
     id: 'ref-traditional', role: 'reference', scenario: 'movie', name: 'Traditional pipeline', sample: 9,
     stages: {
-      input:      { component: 'input_parser.rule_based',          model: null, time: 0.0002, tokens: 0 },
-      candidates: { component: 'generator.traditional',            model: null, time: 0.0069, tokens: 0 },
-      scoring:    { component: 'scorer.traditional',               model: null, time: 0.0031, tokens: 0 },
-      ranking:    { component: 'ranker.traditional',               model: null, time: 0.0012, tokens: 0 },
-      response:   { component: 'output_generator.simple_response', model: null, time: 0.0058, tokens: 0 }
+      input:      { component: 'input_processing.rule_based',          model: null, time: 0.0002, tokens: 0 },
+      candidates: { component: 'candidate_selection.traditional',            model: null, time: 0.0069, tokens: 0 },
+      scoring:    { component: 'scoring.traditional',               model: null, time: 0.0031, tokens: 0 },
+      ranking:    { component: 'ranking.traditional',               model: null, time: 0.0012, tokens: 0 },
+      response:   { component: 'response_generation.simple_response', model: null, time: 0.0058, tokens: 0 }
     }
   },
   {
     id: 'ref-slm', role: 'reference', scenario: 'movie', name: 'SLM direct pipeline', sample: 9,
     stages: {
-      input:      { component: 'input_parser.llm',     model: 'mistral.ministral-3-8b-instruct', time: 0.3835, tokens: 304.1 },
-      candidates: { component: 'generator.llm',        model: 'mistral.ministral-3-8b-instruct', time: 2.1961, tokens: 558.8 },
-      scoring:    { component: 'scorer.llm',           model: 'mistral.ministral-3-8b-instruct', time: 4.1867, tokens: 2314.9 },
-      ranking:    { component: 'ranker.llm',           model: 'mistral.ministral-3-8b-instruct', time: 2.2620, tokens: 1154.3 },
-      response:   { component: 'output_generator.llm', model: 'mistral.ministral-3-8b-instruct', time: 5.4804, tokens: 1878.7 }
+      input:      { component: 'input_processing.llm',     model: 'mistral.ministral-3-8b-instruct', time: 0.3835, tokens: 304.1 },
+      candidates: { component: 'candidate_selection.llm',        model: 'mistral.ministral-3-8b-instruct', time: 2.1961, tokens: 558.8 },
+      scoring:    { component: 'scoring.llm',           model: 'mistral.ministral-3-8b-instruct', time: 4.1867, tokens: 2314.9 },
+      ranking:    { component: 'ranking.llm',           model: 'mistral.ministral-3-8b-instruct', time: 2.2620, tokens: 1154.3 },
+      response:   { component: 'response_generation.llm', model: 'mistral.ministral-3-8b-instruct', time: 5.4804, tokens: 1878.7 }
     }
   },
   {
     id: 'ref-llm', role: 'reference', scenario: 'movie', name: 'LLM direct pipeline', sample: 9,
     stages: {
-      input:      { component: 'input_parser.llm',     model: 'openai.gpt-oss-120b', time: 1.2398, tokens: 566.6 },
-      candidates: { component: 'generator.llm',        model: 'openai.gpt-oss-120b', time: 2.9145, tokens: 1035.2 },
-      scoring:    { component: 'scorer.llm',           model: 'openai.gpt-oss-120b', time: 7.1815, tokens: 3642.1 },
-      ranking:    { component: 'ranker.llm',           model: 'openai.gpt-oss-120b', time: 3.5294, tokens: 1734.2 },
-      response:   { component: 'output_generator.llm', model: 'openai.gpt-oss-120b', time: 4.1505, tokens: 1988.2 }
+      input:      { component: 'input_processing.llm',     model: 'openai.gpt-oss-120b', time: 1.2398, tokens: 566.6 },
+      candidates: { component: 'candidate_selection.llm',        model: 'openai.gpt-oss-120b', time: 2.9145, tokens: 1035.2 },
+      scoring:    { component: 'scoring.llm',           model: 'openai.gpt-oss-120b', time: 7.1815, tokens: 3642.1 },
+      ranking:    { component: 'ranking.llm',           model: 'openai.gpt-oss-120b', time: 3.5294, tokens: 1734.2 },
+      response:   { component: 'response_generation.llm', model: 'openai.gpt-oss-120b', time: 4.1505, tokens: 1988.2 }
     }
   },
   {
     id: 'ref-agent', role: 'reference', scenario: 'movie', name: 'LLM agentic pipeline', sample: 9,
     stages: {
-      input:      { component: 'input_parser.agent',     model: 'openai.gpt-oss-120b', time: 1.7579,  tokens: 949.2 },
-      candidates: { component: 'generator.agent',        model: 'openai.gpt-oss-120b', time: 6.5958,  tokens: 10654.2 },
-      scoring:    { component: 'scorer.agent',           model: 'openai.gpt-oss-120b', time: 10.2181, tokens: 6475.8 },
-      ranking:    { component: 'ranker.agent',           model: 'openai.gpt-oss-120b', time: 8.3183,  tokens: 5603.8 },
-      response:   { component: 'output_generator.agent', model: 'openai.gpt-oss-120b', time: 5.2952,  tokens: 2055.1 }
+      input:      { component: 'input_processing.agent',     model: 'openai.gpt-oss-120b', time: 1.7579,  tokens: 949.2 },
+      candidates: { component: 'candidate_selection.agent',        model: 'openai.gpt-oss-120b', time: 6.5958,  tokens: 10654.2 },
+      scoring:    { component: 'scoring.agent',           model: 'openai.gpt-oss-120b', time: 10.2181, tokens: 6475.8 },
+      ranking:    { component: 'ranking.agent',           model: 'openai.gpt-oss-120b', time: 8.3183,  tokens: 5603.8 },
+      response:   { component: 'response_generation.agent', model: 'openai.gpt-oss-120b', time: 5.2952,  tokens: 2055.1 }
     }
   }
 ];

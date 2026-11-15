@@ -139,7 +139,7 @@ const STAGE_ALTERNATIVES = {
       direct: 'The LM interprets the request',
       agentic: 'The LM interprets the request and links mentioned items to the catalogue (Text-to-SQL)'
     },
-    component: { traditional: 'input_parser.rule_based', direct: 'input_parser.llm', agentic: 'input_parser.agent' },
+    component: { traditional: 'input_processing.rule_based', direct: 'input_processing.llm', agentic: 'input_processing.agent' },
     capabilities: { traditional: [], direct: ['freeform'], agentic: ['freeform', 'catalogue_access'] },
     requiredResources: { agentic: ['attributes'] },   // Text-to-SQL on the catalogue
     est: {
@@ -155,7 +155,7 @@ const STAGE_ALTERNATIVES = {
       direct: "The LM generates items from its own knowledge, without catalogue access",
       agentic: 'The LM queries the catalogue (Text-to-SQL) and refines the query'
     },
-    component: { traditional: 'generator.traditional', direct: 'generator.llm', agentic: 'generator.agent' },
+    component: { traditional: 'candidate_selection.traditional', direct: 'candidate_selection.llm', agentic: 'candidate_selection.agent' },
     capabilities: { traditional: ['catalogue_access'], direct: [], agentic: ['catalogue_access'] },
     // ALS with attribute filtering falls back on the filter for users without a history,
     // so it does not require interaction histories (pure ALS would).
@@ -176,7 +176,7 @@ const STAGE_ALTERNATIVES = {
       direct: 'The LM estimates relevance from the attributes of each candidate',
       agentic: 'The LM estimates relevance and can retrieve further attributes'
     },
-    component: { traditional: 'scorer.traditional', direct: 'scorer.llm', agentic: 'scorer.agent' },
+    component: { traditional: 'scoring.traditional', direct: 'scoring.llm', agentic: 'scoring.agent' },
     capabilities: { traditional: [], direct: [], agentic: ['catalogue_access'] },
     requiredResources: { traditional: ['ratings'], agentic: ['attributes'] },
     est: {
@@ -193,7 +193,7 @@ const STAGE_ALTERNATIVES = {
       direct: 'The LM orders candidates from score and attributes',
       agentic: 'The LM orders candidates and can retrieve further attributes'
     },
-    component: { traditional: 'ranker.traditional', direct: 'ranker.llm', agentic: 'ranker.agent' },
+    component: { traditional: 'ranking.traditional', direct: 'ranking.llm', agentic: 'ranking.agent' },
     capabilities: { traditional: [], direct: [], agentic: ['catalogue_access'] },
     requiredResources: { agentic: ['attributes'] },
     params: { traditional: { top_k: 10 }, direct: { top_k: 10 }, agentic: { top_k: 10 } },
@@ -211,7 +211,7 @@ const STAGE_ALTERNATIVES = {
       direct: 'The LM generates the response from the ranked list',
       agentic: 'The LM generates the response and can retrieve further attributes'
     },
-    component: { traditional: 'output_generator.simple_response', direct: 'output_generator.llm', agentic: 'output_generator.agent' },
+    component: { traditional: 'response_generation.simple_response', direct: 'response_generation.llm', agentic: 'response_generation.agent' },
     capabilities: { traditional: [], direct: ['explanations'], agentic: ['explanations', 'catalogue_access'] },
     requiredResources: { agentic: ['attributes'] },
     est: {
