@@ -8,15 +8,8 @@
 //   config   design activities 1-3 (scenario characterisation ... alternative identification)
 //   select   design activities 4-5 (alternative comparison, configuration selection)
 //   monitor  design activity 6 (execution feedback)
+// The top bar shows the brand (back to home) and one arrow per design activity (see progressBar).
 // =====================================================================
-
-const PAGES = [
-  { id: 'home',    name: 'Home' },
-  { id: 'space',   name: 'Design space' },
-  { id: 'config',  name: 'Configuration' },
-  { id: 'select',  name: 'Comparison and Selection', parent: 'config' },   // design activities 4-5: not in the bar, reached from Configuration
-  { id: 'monitor', name: 'Monitoring<br>and Review' }   // design activity 6, on two lines
-];
 
 // ---------- State ----------
 const state = {
@@ -250,13 +243,45 @@ function deriveVersion() {
 // Rendering
 // =====================================================================
 function render() {
-  // Pages with a parent are not in the bar: the parent is highlighted while they are open.
-  const current = PAGES.find(p => p.id === state.page);
-  const active = (current && current.parent) || state.page;
-  $('#nav').innerHTML = PAGES.filter(p => !p.parent).map(p =>
-    `<button class="nav-link ${p.id === active ? 'active' : ''}" data-action="goto" data-page="${p.id}">${p.name}</button>`).join('');
+  $('#nav').innerHTML = progressBar();   // in the sticky top bar, so it stays visible while scrolling
   const views = { home: viewHome, space: viewDesignSpace, config: viewConfiguration, select: viewSelection, monitor: viewMonitoring };
   $('#view').innerHTML = views[state.page]();
+}
+
+// ---------- Progress through the design activities ----------
+// One arrow per activity, in the top bar. By position: the activities of the previous pages are done,
+// those of the current page are current, the following ones are still to do. Outside the design
+// process (home, design space) every activity is still to do.
+const ACTIVITIES = [
+  { n: 1, name: 'Scenario characterisation',  page: 'config' },
+  { n: 2, name: 'Requirements specification', page: 'config' },
+  { n: 3, name: 'Alternative identification', page: 'config' },
+  { n: 4, name: 'Alternative comparison',     page: 'select' },
+  { n: 5, name: 'Configuration selection',    page: 'select' },
+  { n: 6, name: 'Monitoring and review',      page: 'monitor' }
+];
+const PROCESS_PAGES = ['config', 'select', 'monitor'];
+
+function progressBar() {
+  const at = PROCESS_PAGES.indexOf(state.page);   // -1 outside the process: all to do
+  // Home comes first, before activity 1: current on the home page, otherwise like a completed step.
+  const home = `<li class="step-home ${state.page === 'home' ? 'step-current' : 'step-done'}"><button data-action="goto" data-page="home"
+      ${state.page === 'home' ? 'aria-current="page"' : ''}><span class="step-name">Home</span></button></li>`;
+  return `<nav class="activity-progress" aria-label="Design activities"><ol>${home}${ACTIVITIES.map(a => {
+    const pos = PROCESS_PAGES.indexOf(a.page);
+    const status = at < 0 || pos > at ? 'todo' : pos < at ? 'done' : 'current';
+    return `<li class="step-${status}"><button data-action="activity" data-n="${a.n}" title="${a.n}. ${a.name}" ${status === 'current' ? 'aria-current="step"' : ''}>
+      <span class="step-num">${status === 'done' ? '✓' : a.n}</span><span class="step-name">${a.name}</span></button></li>`;
+  }).join('')}</ol></nav>`;
+}
+
+// Opens the page of an activity and brings its section into view.
+function goToActivity(n) {
+  const a = ACTIVITIES.find(x => x.n === n);
+  if (state.page !== a.page) goTo(a.page);
+  const head = $(`#activity-${n}`);
+  if (head && ACTIVITIES.find(x => x.page === a.page).n !== n) head.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  else window.scrollTo({ top: 0, behavior: 'smooth' });   // first activity of the page: top of the page
 }
 
 // ---------- Shared fragments ----------
@@ -281,7 +306,7 @@ function scoreBar(score) {
 
 // Numbered section header of a design activity.
 function activityHead(n, title, text) {
-  return `<div class="activity-head"><span class="activity-num">${n}</span><div><h2>${title}</h2><p class="muted">${text}</p></div></div>`;
+  return `<div class="activity-head" id="activity-${n}"><span class="activity-num">${n}</span><div><h2>${title}</h2><p class="muted">${text}</p></div></div>`;
 }
 
 function todo(text) { return `<div class="todo-box">${chip('to do', 'todo')} ${text}</div>`; }
@@ -960,6 +985,7 @@ document.addEventListener('click', e => {
   if (!el || el.tagName === 'INPUT') return;
   const a = el.dataset.action;
   if (a === 'goto') { e.preventDefault(); goTo(el.dataset.page); }
+  else if (a === 'activity') goToActivity(Number(el.dataset.n));
   else if (a === 'new') startNew();
   else if (a === 'scenario') loadScenario(el.dataset.id);
   else if (a === 'explore') { state.exploreStage = el.dataset.stage; render(); }
