@@ -5,7 +5,8 @@
 // Pages:
 //   home     landing page (load an example, start a configuration, explore the design space)
 //   space    design space: pipeline, dimensions, alternatives of each stage
-//   config   design activities 1-5 (scenario characterisation ... configuration selection)
+//   config   design activities 1-3 (scenario characterisation ... alternative identification)
+//   select   design activities 4-5 (alternative comparison, configuration selection)
 //   monitor  design activity 6 (execution feedback)
 // =====================================================================
 
@@ -13,6 +14,7 @@ const PAGES = [
   { id: 'home',    name: 'Home' },
   { id: 'space',   name: 'Design space' },
   { id: 'config',  name: 'Configuration' },
+  { id: 'select',  name: 'Comparison and Selection', parent: 'config' },   // design activities 4-5: not in the bar, reached from Configuration
   { id: 'monitor', name: 'Monitoring<br>and Review' }   // design activity 6, on two lines
 ];
 
@@ -241,16 +243,19 @@ function deriveVersion() {
       }
   state.draft = {};
   state.version += 1;
-  goTo('config');
+  goTo('select');   // the revised estimates change the comparison and the selection
 }
 
 // =====================================================================
 // Rendering
 // =====================================================================
 function render() {
-  $('#nav').innerHTML = PAGES.map(p =>
-    `<button class="nav-link ${p.id === state.page ? 'active' : ''}" data-action="goto" data-page="${p.id}">${p.name}</button>`).join('');
-  const views = { home: viewHome, space: viewDesignSpace, config: viewConfiguration, monitor: viewMonitoring };
+  // Pages with a parent are not in the bar: the parent is highlighted while they are open.
+  const current = PAGES.find(p => p.id === state.page);
+  const active = (current && current.parent) || state.page;
+  $('#nav').innerHTML = PAGES.filter(p => !p.parent).map(p =>
+    `<button class="nav-link ${p.id === active ? 'active' : ''}" data-action="goto" data-page="${p.id}">${p.name}</button>`).join('');
+  const views = { home: viewHome, space: viewDesignSpace, config: viewConfiguration, select: viewSelection, monitor: viewMonitoring };
   $('#view').innerHTML = views[state.page]();
 }
 
@@ -298,18 +303,12 @@ function viewHome() {
     <div class="card-head"><h2>How do you want to start?</h2></div>
     <div class="start-main">
       <div class="start-row">
-        <div>
-          <h4>Start a new configuration</h4>
-          <p class="muted">Characterise your own scenario by answering the questions.</p>
-        </div>
-        <button class="btn primary" data-action="new">Start new configuration →</button>
+        <h4>Create a new configuration</h4>
+        <button class="btn primary" data-action="new">Start designing →</button>
       </div>
       <div class="start-row">
-        <div>
-          <h4>Explore the design space</h4>
-          <p class="muted">Browse the pipeline stages and every alternative the framework implements.</p>
-        </div>
-        <button class="btn" data-action="goto" data-page="space">Explore the design space →</button>
+        <h4>Explore the design space</h4>
+        <button class="btn" data-action="goto" data-page="space">Explore →</button>
       </div>
     </div>
 
@@ -323,10 +322,6 @@ function viewHome() {
               <p>${sc.description}</p>
             </div>
             <button class="btn" data-action="scenario" data-id="${id}">Load example →</button>
-          </div>
-          <div class="example-query">
-            <span class="fact-label">Example query</span>
-            <blockquote>“${esc(sc.example)}”</blockquote>
           </div>
         </div>`).join("")}
     </div>
@@ -439,7 +434,7 @@ function altDetail(alt) {
 }
 
 // =====================================================================
-// Page: Configuration (design activities 1-5)
+// Page: Configuration (design activities 1-3)
 // =====================================================================
 // Context of the design: free-text fields, stored in state.context.
 function contextCard() {
@@ -451,7 +446,7 @@ function contextCard() {
   };
   return `
   <div class="card">
-    <div class="card-head"><h2>Context</h2><span class="muted">The application the recommender is designed for</span></div>
+    <div class="card-head"><h2>Context</h2></div>
     <div class="field-grid">${CONTEXT_FIELDS.map(field).join('')}</div>
   </div>`;
 }
@@ -463,7 +458,7 @@ function viewConfiguration() {
   <section class="activity-section">
     <div class="two-col">
       <div>
-        ${activityHead(1, 'Scenario characterisation', 'The designer answers each question by choosing one option.')}
+        ${activityHead(1, 'Scenario characterisation', '')}
         ${contextCard()}
         <p class="small muted" id="answered-count">${answeredText()}</p>
         ${QUESTION_GROUPS.map(g => `
@@ -473,20 +468,29 @@ function viewConfiguration() {
           </div>`).join('')}
       </div>
       <aside class="sticky">
-        ${activityHead(2, 'Requirements specification', 'Hard constraints and preferences implied by the answers.')}
+        ${activityHead(2, 'Requirements specification', '')}
         <div id="requirements">${requirementsPanel()}</div>
+        <div class="aside-activity" id="identification">${identificationSection()}</div>
       </aside>
     </div>
   </section>
 
-  <hr class="activity-divider">
-  <section class="activity-section" id="identification">${identificationSection()}</section>
+  <div class="actions end page-actions">
+    <button class="btn primary with-num" data-action="goto" data-page="select"><span class="activity-num">4</span> Comparison and selection →</button>
+  </div>`;
+}
 
-  <hr class="activity-divider">
+// =====================================================================
+// Page: Comparison and selection (design activities 4-5)
+// =====================================================================
+function viewSelection() {
+  return `
+  <div class="page-top"></div>
+
   <section class="activity-section" id="comparison">${comparisonSection()}</section>
 
   <hr class="activity-divider">
-  <section class="activity-section" id="selection">${selectionSection()}</section>`;
+  <section class="activity-section" id="selection">${selectionSection()}</section>`;   // its buttons are at the end of activity 5
 }
 
 const answeredText = () => `${QUESTIONS.filter(q => state.answers[q.id]).length} of ${QUESTIONS.length} questions answered`;
@@ -516,7 +520,7 @@ function requirementsPanel() {
     <div class="label">Criteria and preferences</div>
     <ul class="pref-list">${CRITERIA.map(c => {
       const p = req.preferences[c.id];
-      return `<li ${p ? `title="From: ${esc(qText(p.from))}"` : ''}><span>${c.name} <span class="muted small">· ${c.family}</span></span>
+      return `<li ${p ? `title="From: ${esc(qText(p.from))}"` : ''}><span>${c.name}</span>
         ${p ? `<span class="prio prio-${p.priority}">${p.priority} · weight ${p.weight}</span>` : '<span class="muted small">not weighted</span>'}</li>`;
     }).join('')}</ul>  </div>`;
 }
@@ -530,8 +534,7 @@ function identificationSection() {
     return `<td class="ef ${r.feasible ? 'st-feasible' : 'st-excluded'}" title="${esc(tip)}">${r.feasible ? '✓' : '✗'}</td>`;
   };
   return `
-  ${activityHead(3, 'Alternative identification', `Each alternative is <span class="lg st-feasible">✓ feasible</span> or
-    <span class="lg st-excluded">✗ excluded</span> if it violates a hard constraint. Hover a cell for the reason.`)}
+  ${activityHead(3, 'Alternative identification', '')}
   <div class="card">
     <div class="table-wrap"><table class="effects">
       <thead><tr><th>Stage</th><th></th>${VARIANTS.map(v => `<th>${variantLabel(v)}</th>`).join('')}</tr></thead>
@@ -541,6 +544,8 @@ function identificationSection() {
           ${VARIANTS.map(v => cell(rows.find(r => r.alt.kind === `${v}-${d}`))).join('')}
         </tr>`).join('')}</tbody>`).join('')}
     </table></div>
+    <p class="table-note muted">Each alternative is <span class="lg st-feasible">✓ feasible</span> or
+      <span class="lg st-excluded">✗ excluded</span> if it violates a hard constraint. Hover a cell for the reason.</p>
   </div>`;
 }
 
@@ -555,8 +560,9 @@ function comparisonSection() {
   const ins = state.inspect && comparisons.find(c => c.stage.id === state.inspect.stage);
   const insRow = ins && ins.ranked.find(r => r.variant === state.inspect.variant);
   return `
-  ${activityHead(4, 'Alternative comparison', 'Feasible alternatives ranked by the weighted sum of their expected performance. Click one to see how its score is obtained.')}
-  <div class="compare-grid">
+  ${activityHead(4, 'Alternative comparison', '')}
+  <div class="two-col compare-layout">
+  <div class="compare-stack">
     ${comparisons.map(({ stage, ranked }) => `
     <div class="card stage-compare">
       <div class="card-head"><h2>${stage.name}</h2><span class="muted">${ranked.length} feasible</span></div>
@@ -570,7 +576,11 @@ function comparisonSection() {
         : '<p class="warn-text">No feasible alternative: revise the answers.</p>'}
     </div>`).join('')}
   </div>
-  ${insRow ? scoreDetail(ins.stage, insRow, req) : ''}`;
+  <aside class="sticky">
+    ${insRow ? scoreDetail(ins.stage, insRow, req)
+      : '<div class="card score-placeholder"><p class="muted">Click an alternative to see how its score is obtained.</p></div>'}
+  </aside>
+  </div>`;
 }
 
 // How the score of an alternative is obtained: estimates, weights and their provenance.
@@ -627,7 +637,7 @@ function selectionSection() {
   const req = deriveRequirements(state.answers);
   const rows = currentConfiguration();
   return `
-  ${activityHead(5, 'Configuration selection', 'For each stage, the designer selects one feasible alternative (by default the best ranked), its language model and its parameters. Constraints on the complete pipeline are checked on the resulting configuration.')}
+  ${activityHead(5, 'Configuration selection', '')}
   <div class="card">
     <div class="table-wrap"><table class="alts selection">
       <thead><tr><th>Stage</th><th>Alternative</th><th>Deployment</th><th>Language model</th><th>Parameters</th><th>Rationale</th></tr></thead>
@@ -654,11 +664,11 @@ function selectionSection() {
 
     <div class="label">Constraints on the complete pipeline</div>
     ${pipelineConstraints(req)}
-    <div class="actions end">
-      <button class="btn" data-action="yaml">${state.showYaml ? 'Hide' : 'Generate'} YAML configuration file</button>
-      <button class="btn primary with-num" data-action="goto" data-page="monitor"><span class="activity-num">6</span> Go to monitoring →</button>
-    </div>
     <div id="yaml-panel">${state.showYaml ? yamlPanel(rows) : ''}</div>
+  </div>
+  <div class="nav-buttons">
+    <button class="btn" data-action="goto" data-page="config">← Back to configuration</button>
+    ${state.showYaml ? '' : '<button class="btn primary" data-action="yaml">Generate YAML configuration file</button>'}
   </div>`;
 }
 
@@ -698,12 +708,15 @@ function yamlText(rows) {
 }
 
 function yamlPanel(rows) {
-  if (rows.some(r => !r.sel)) return '<p class="warn-text">Every stage needs a feasible alternative before the configuration file can be generated.</p>';
+  // The generate button is hidden while the panel is shown, so the panel has its own Close button.
+  const close = '<button class="btn" data-action="yaml">Close</button>';
+  if (rows.some(r => !r.sel)) return `<p class="warn-text">Every stage needs a feasible alternative before the configuration file can be generated.</p>
+    <div class="actions end">${close}</div>`;
   return `
   <div class="yaml-box">
     <div class="yaml-head"><span class="fact-label">${FRAMEWORK_CONFIG.fileName}</span>
       <span class="actions"><button class="btn" data-action="copy-yaml">Copy</button>
-      <button class="btn" data-action="download-yaml">Download</button></span></div>
+      <button class="btn outline" data-action="download-yaml">Download</button>${close}</span></div>
     <pre><code>${esc(yamlText(rows))}</code></pre>
   </div>`;
 }
@@ -842,8 +855,10 @@ function diagnosticsBox(rows, ex, req) {
       if (now && next && now.kind !== 'Measured' && Math.abs(next.value - now.value) >= 0.2 - 1e-9)
         deviations.push({ stage, c, now, next, gap: Math.abs(next.value - now.value) });
     }
+  // Stage, then criterion with the direction of the gap (values are higher-is-better); estimated → measured on the right.
+  const verdict = { time: ['faster', 'slower'], cost: ['cheaper', 'more expensive'] };
   deviations.sort((a, b) => b.gap - a.gap).slice(0, 2).forEach(d =>
-    gaps.push(`<li><span>${d.stage.name}<br><span class="muted small">${criterionById(d.c).name}</span></span>
+    gaps.push(`<li><span><strong>${d.stage.name}</strong><br><span class="muted small">${criterionById(d.c).name}: ${verdict[d.c][d.next.value < d.now.value ? 1 : 0]}</span></span>
       <span class="gap">${expectedCell(d.c, d.now)} → ${expectedCell(d.c, d.next)}</span></li>`));
   for (const c of req.constraints) {
     if (c.pipeline === 'time' && ex.pipeline.time > c.max) {
@@ -859,7 +874,8 @@ function diagnosticsBox(rows, ex, req) {
         <div class="subcard-head"><h3>Diagnostics</h3><span class="muted small">automatic remarks on the execution</span></div>
         <div class="label pad-label">Largest share of the pipeline</div>
         <ul class="diag-rows">${shares.join('')}</ul>
-        ${gaps.length ? `<div class="label pad-label">Estimates far from the measurement</div><ul class="diag-rows">${gaps.join('')}</ul>` : ''}
+        ${gaps.length ? `<div class="label pad-label">Estimates far from the measurement</div><ul class="diag-rows">
+          <li class="diag-head"><span></span><span>estimated → measured</span></li>${gaps.join('')}</ul>` : ''}
         ${hints.length ? `<div class="label pad-label">Review suggestions</div><ul class="diag-list">${hints.join('')}</ul>` : ''}
       </div>`;
 }
@@ -890,7 +906,7 @@ function viewMonitoring() {
   const rows = currentConfiguration();
   const head = '<div class="page-top"></div>';   // no page heading: title and text are in the activity box
   const nav = `
-  <div class="nav-buttons"><button class="btn" data-action="goto" data-page="config">← Back to configuration</button>
+  <div class="nav-buttons"><button class="btn" data-action="goto" data-page="select">← Back to comparison and selection</button>
     <button class="btn" data-action="new">Start new configuration</button></div>`;
   if (rows.some(r => !r.sel)) return `${head}<div class="card"><p class="warn-text">The configuration is incomplete: select a feasible alternative for every stage.</p></div>${nav}`;
 
@@ -902,7 +918,7 @@ function viewMonitoring() {
   const previous = previousExecutions();
   return `${head}
   <div class="card">
-    ${activityHead(6, 'Monitoring and Review', `Measurements of pipeline version v${state.version}, per stage and for the complete pipeline, recorded as evaluation evidence.`)}
+    ${activityHead(6, 'Monitoring and Review', ``)}
     ${ex ? executionTables(ex)
          : `<p class="warn-text">Pipeline version v${state.version} has not been executed yet: generate its configuration file and run it with the framework.
             Its measurements will appear here.</p>`}
@@ -954,7 +970,8 @@ document.addEventListener('click', e => {
     $('#comparison').innerHTML = comparisonSection();
     // Bring the score breakdown into view.
     const detail = $('#comparison .score-detail');
-    if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Side by side it is already visible; on narrow screens it is below the stages.
+    if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   else if (a === 'yaml') { state.showYaml = !state.showYaml; $('#selection').innerHTML = selectionSection(); }
   else if (a === 'download-yaml') downloadYaml();
@@ -988,8 +1005,7 @@ document.addEventListener('change', e => {
     $('#answered-count').textContent = answeredText();
     $('#requirements').innerHTML = requirementsPanel();
     $('#identification').innerHTML = identificationSection();
-    $('#comparison').innerHTML = comparisonSection();
-    $('#selection').innerHTML = selectionSection();
+    // Comparison and selection are on their own page and are rendered from the state when it is opened.
   } else if (a === 'select') {
     // New variant: keep the current deployment if it is feasible for it, otherwise its first feasible one.
     const stage = e.target.dataset.stage;
