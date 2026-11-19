@@ -554,24 +554,37 @@ function requirementsPanel() {
 function identificationSection() {
   const req = deriveRequirements(state.answers);
   const identified = STAGES.map(s => ({ stage: s, rows: identifyStage(s.id, req) }));
+  // The reason is shown in the note below the table on hover or tap (same on every system and on touch screens).
   const cell = r => {
-    const tip = altLabel(r.alt) + (r.feasible ? ' · feasible' : ' · excluded: ' + r.reasons.join('; '));
-    return `<td class="ef ${r.feasible ? 'st-feasible' : 'st-excluded'}" title="${esc(tip)}">${r.feasible ? '✓' : '✗'}</td>`;
+    const tip = `<strong>${altLabel(r.alt)}</strong>: ` + (r.feasible ? 'feasible' : 'excluded — ' + r.reasons.join('; '));
+    const plain = altLabel(r.alt) + (r.feasible ? ': feasible' : ': excluded — ' + r.reasons.join('; '));
+    return `<td class="ef ${r.feasible ? 'st-feasible' : 'st-excluded'}" data-tip="${esc(tip)}" aria-label="${esc(plain)}">${r.feasible ? '✓' : '✗'}</td>`;
   };
   return `
   ${activityHead(3, 'Alternative identification', '')}
-  <div class="card">
-    <div class="table-wrap"><table class="effects">
+  <div class="table-wrap table-box"><table class="effects">
       <thead><tr><th>Stage</th><th></th>${VARIANTS.map(v => `<th>${variantLabel(v)}</th>`).join('')}</tr></thead>
       ${identified.map(({ stage, rows }) => `<tbody>${['internal', 'external'].map((d, i) => `
         <tr>${i === 0 ? `<th rowspan="2" class="ef-stage">${stage.name}</th>` : ''}
           <td class="ef-dep">${d}</td>
           ${VARIANTS.map(v => cell(rows.find(r => r.alt.kind === `${v}-${d}`))).join('')}
         </tr>`).join('')}</tbody>`).join('')}
-    </table></div>
-    <p class="table-note muted">Each alternative is <span class="lg st-feasible">✓ feasible</span> or
-      <span class="lg st-excluded">✗ excluded</span> if it violates a hard constraint. Hover a cell for the reason.</p>
-  </div>`;
+  </table></div>
+  <p class="table-note ident-note muted" id="ident-note">${IDENT_NOTE}</p>`;
+}
+
+// Default text of the note below the identification table (replaced by the reason of the hovered cell).
+const IDENT_NOTE = `Each alternative is <span class="lg st-feasible">✓ feasible</span> or
+  <span class="lg st-excluded">✗ excluded</span> if it violates a hard constraint. Point at or tap a cell for the reason.`;
+
+// Shows the reason of a cell in the note, or the default text when the pointer leaves the table.
+function showIdentReason(td) {
+  const note = $('#ident-note');
+  if (!note) return;
+  document.querySelectorAll('td.ef.ef-active').forEach(c => c.classList.remove('ef-active'));
+  if (td) td.classList.add('ef-active');
+  note.innerHTML = td ? td.dataset.tip : IDENT_NOTE;
+  note.classList.toggle('showing-reason', !!td);
 }
 
 // ---------- Activity 4: Alternative comparison ----------
@@ -824,31 +837,43 @@ function stageMeasure(crit, s) {
   return crit === 'time' ? fmtTime(s.time) : fmtTokens(s.tokens) + ' tokens';
 }
 
+// Difference between the new value (measured or revised) and the current one, on the 0-1 scale.
+// Colour by distance: below half a level (0.1) close, up to one level (0.2) moderate, beyond far.
+// The diagnostics use the same one-level threshold.
+function revisionDelta(ep, newValue) {
+  if (!ep || newValue === null || newValue === undefined) return '<span class="muted">—</span>';
+  const delta = newValue - ep.value, gap = Math.abs(delta);
+  const cls = gap < 0.1 - 1e-9 ? 'd-close' : gap < 0.2 + 1e-9 ? 'd-mid' : 'd-far';
+  const sign = gap < 0.005 ? '' : delta > 0 ? '+' : '−';   // no sign when it rounds to 0.00
+  return `<span class="delta ${cls}">${sign}${gap.toFixed(2)}</span>`;
+}
+
 // Update of the expected performance of the executed alternatives, one box per stage: response time and cost
 // become measured; the other criteria are measured on the complete pipeline and the designer may revise their estimates.
 function revisionSection(rows, ex) {
   const draftOf = (st, v, c) => ((state.draft[st] || {})[v] || {})[c];
   return `
-    <div class="section-head"><h3>Update the expected performance</h3><span class="muted small">sample size n = ${ex.sample}</span></div>
-    <p class="small muted">Response time and cost of the executed alternatives are replaced by their measurements, normalised with respect to
+    <div class="card-head"><h2>Review</h2><span class="muted">sample size n = ${ex.sample}</span></div>
+    <p class="small muted">Update the expected performance. Response time and cost of the executed alternatives are replaced by their measurements, normalised with respect to
        the highest value observed for the stage.<br> The other criteria are measured on the complete pipeline: the designer may revise their estimates.</p>
     <div class="revision-grid">
       ${rows.map(({ stage, sel }) => {
         const alt = sel.alt, s = ex.stages[stage.id];
         return `<div class="subcard">
-          <div class="subcard-head"><h3>${stage.name}</h3><span class="muted small">${variantLabel(alt.variant)}</span></div>
+          <div class="subcard-head"><h3>${stage.name} <span class="alt-name">· ${variantLabel(alt.variant)}</span></h3></div>
           <table class="alts revision">
-            <thead><tr><th>Criterion</th><th>Current</th><th>New</th></tr></thead>
+            <thead><tr><th>Criterion</th><th>Current</th><th>New</th><th title="New value minus current value">Deviation</th></tr></thead>
             <tbody>${STAGE_CRITERIA[stage.id].map(c => {
               const ep = expectedPerformance(alt, c), d = draftOf(stage.id, alt.variant, c);
               const next = expectedPerformance(alt, c, state.version);  // value once the results of this version are applied
-              return `<tr><th>${criterionById(c).name}</th>
+              return `<tr><td>${criterionById(c).name}</td>
                 <td>${expectedCell(c, ep)}</td>
                 <td>${next && next.kind === 'Measured' ? `${expectedCell(c, next)} <div class="evidence">measured (${stageMeasure(c, s)})</div>` : `
                   <select data-action="revise" data-stage="${stage.id}" data-variant="${alt.variant}" data-crit="${c}">
                     <option value="">Keep ${ep ? ep.level : ''}</option>
                     ${Object.keys(LEVELS).map(l => `<option value="${l}" ${d === l ? 'selected' : ''}>${l}</option>`).join('')}
-                  </select>`}</td></tr>`;
+                  </select>`}</td>
+                <td>${revisionDelta(ep, next && next.kind === 'Measured' ? next.value : d ? LEVELS[d] : null)}</td></tr>`;
             }).join('')}</tbody>
           </table>
         </div>`;
@@ -860,7 +885,7 @@ function revisionSection(rows, ex) {
 }
 
 // ---------- Diagnostics ----------
-// Few automatic remarks on the execution, shown only when they apply:
+// Few automatic remarks on the execution:
 //   - the stage with the largest share of response time and of cost;
 //   - estimates that differ from the measurement by at least one level of the scale (largest two);
 //   - for each violated constraint, where to act (or the requirement to revise when it cannot be met).
@@ -870,8 +895,7 @@ function diagnosticsBox(rows, ex, req) {
   const dominant = k => STAGES.reduce((a, b) => ex.stages[b.id][k] > ex.stages[a.id][k] ? b : a);
   for (const [k, name] of [['time', 'Response time'], ['tokens', 'Cost']]) {
     const st = dominant(k), share = total(k) ? ex.stages[st.id][k] / total(k) : 0;
-    const of = k === 'time' ? 'total time' : 'total cost';
-    if (share > 0) shares.push(`<li><span>${name}</span><span><strong>${st.name}</strong> · ${Math.round(share * 100)}% of ${of}</span></li>`);
+    if (share > 0) shares.push(`<tr><td>${name}</td><td>${st.name}</td><td class="num">${Math.round(share * 100)}%</td></tr>`);
   }
   const deviations = [];
   for (const { stage, sel } of rows)
@@ -880,11 +904,12 @@ function diagnosticsBox(rows, ex, req) {
       if (now && next && now.kind !== 'Measured' && Math.abs(next.value - now.value) >= 0.2 - 1e-9)
         deviations.push({ stage, c, now, next, gap: Math.abs(next.value - now.value) });
     }
-  // Stage, then criterion with the direction of the gap (values are higher-is-better); estimated → measured on the right.
+  // Stage, criterion, estimated and measured value on the 0-1 scale, outcome (direction of the gap; values are higher-is-better).
   const verdict = { time: ['faster', 'slower'], cost: ['cheaper', 'more expensive'] };
   deviations.sort((a, b) => b.gap - a.gap).slice(0, 2).forEach(d =>
-    gaps.push(`<li><span><strong>${d.stage.name}</strong><br><span class="muted small">${criterionById(d.c).name}: ${verdict[d.c][d.next.value < d.now.value ? 1 : 0]}</span></span>
-      <span class="gap">${expectedCell(d.c, d.now)} → ${expectedCell(d.c, d.next)}</span></li>`));
+    gaps.push(`<tr><td>${d.stage.name}</td><td>${criterionById(d.c).name}</td>
+      <td class="num">${d.now.value.toFixed(2)}</td><td class="num">${d.next.value.toFixed(2)}</td>
+      <td>${verdict[d.c][d.next.value < d.now.value ? 1 : 0]}</td></tr>`));
   for (const c of req.constraints) {
     if (c.pipeline === 'time' && ex.pipeline.time > c.max) {
       // Fastest pipeline observed: the fastest measured alternative of every stage.
@@ -894,14 +919,33 @@ function diagnosticsBox(rows, ex, req) {
     if (c.verify && ex.pipeline[c.verify.measure] > c.verify.max)
       hints.push(`<li>Revise <strong>${c.stages.map(id => stageById(id).name).join(', ')}</strong>: ${esc(c.text.toLowerCase())}</li>`);
   }
+  // Diagnostics box: stages with the largest impact on the left, estimates far from the measurement on the right,
+  // review suggestions (if any) below, across both columns.
   return `
       <div class="subcard">
-        <div class="subcard-head"><h3>Diagnostics</h3><span class="muted small">automatic remarks on the execution</span></div>
-        <div class="label pad-label">Largest share of the pipeline</div>
-        <ul class="diag-rows">${shares.join('')}</ul>
-        ${gaps.length ? `<div class="label pad-label">Estimates far from the measurement</div><ul class="diag-rows">
-          <li class="diag-head"><span></span><span>estimated → measured</span></li>${gaps.join('')}</ul>` : ''}
-        ${hints.length ? `<div class="label pad-label">Review suggestions</div><ul class="diag-list">${hints.join('')}</ul>` : ''}
+        <div class="subcard-head"><h3>Diagnostics</h3></div>
+        <div class="diag-cols">
+          <div>
+            <div class="label pad-label">Most demanding stages</div>
+            <table class="alts diag-table">
+              <thead><tr><th>Measure</th><th>Stage</th><th class="num">% of total</th></tr></thead>
+              <tbody>${shares.join('')}</tbody>
+            </table>
+          </div>
+          <div>
+            <div class="label pad-label">Largest deviations</div>
+            ${gaps.length ? `<table class="alts diag-table">
+              <thead><tr><th>Stage</th><th>Criterion</th><th class="num">Estimated</th><th class="num">Measured</th><th>Outcome</th></tr></thead>
+              <tbody>${gaps.join('')}</tbody>
+            </table>`
+                          : '<p class="muted small pad">None: the estimates are within one level of the measurements.</p>'}
+          </div>
+        </div>
+        <div class="diag-suggestions">
+          <div class="label pad-label">Review suggestions</div>
+          ${hints.length ? `<ul class="diag-list">${hints.join('')}</ul>`
+                         : '<p class="muted small pad">None: no constraint is violated.</p>'}
+        </div>
       </div>`;
 }
 
@@ -941,34 +985,38 @@ function viewMonitoring() {
   // Stage-level constraints: the selected alternatives are feasible, so they satisfy them by construction.
   const stageConstraints = req.constraints.filter(c => !isPipelineConstraint(c));
   const previous = previousExecutions();
+  // Before the execution the diagnostics box keeps its place, with a placeholder, so the layout does not change.
+  const diag = ex ? diagnosticsBox(rows, ex, req) : `
+      <div class="subcard">
+        <div class="subcard-head"><h3>Diagnostics</h3></div>
+        <p class="muted small pad diag-empty">Available once pipeline version v${state.version} has been executed.</p>
+      </div>`;
   return `${head}
   <div class="card">
-    ${activityHead(6, 'Monitoring and Review', ``)}
+    ${activityHead(6, 'Monitoring', ``)}
     ${ex ? executionTables(ex)
-         : `<p class="warn-text">Pipeline version v${state.version} has not been executed yet: generate its configuration file and run it with the framework.
-            Its measurements will appear here.</p>`}
+         : `<p class="warn-text">Pipeline version v${state.version} has not been executed yet: generate its configuration file and run it with the framework.</p>`}
 
-    <div class="execution-grid constraints-grid ${ex ? 'three' : ''}">
+    <div class="execution-grid constraints-grid with-diag">
       <div class="subcard">
-        <div class="subcard-head"><h3>Constraints on single stages</h3><span class="muted small">verified in alternative identification.</span></div>
+        <div class="subcard-head"><h3>Constraints</h3></div>
+        <div class="label pad-label">On single stages <span class="label-note">· verified in alternative identification</span></div>
         ${stageConstraints.length ? `<ul class="req-list pad">${stageConstraints.map(c => {
           const v = verifyStageConstraint(c, ex);
           return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
         }).join('')}</ul>`
           : '<p class="muted small pad">None</p>'}
-      </div>
-      <div class="subcard">
-        <div class="subcard-head"><h3>Constraints on the complete pipeline</h3><span class="muted small">verified on the measured values</span></div>
+        <div class="label pad-label">On the complete pipeline <span class="label-note">· verified on the measured values</span></div>
         ${constraints.length ? `<ul class="req-list pad">${constraints.map(c => {
           const v = verifyPipelineConstraint(c, ex);
           return `<li>${esc(c.text)} <span class="verdict v-${v.status}">${v.text}</span></li>`;
         }).join('')}</ul>` : '<p class="muted small pad">None</p>'}
       </div>
-      ${ex ? diagnosticsBox(rows, ex, req) : ''}
+      ${diag}
     </div>
-
-    ${ex ? revisionSection(rows, ex) : ''}
   </div>
+
+  ${ex ? `<div class="card">${revisionSection(rows, ex)}</div>` : ''}
 
   ${previous.length ? `
   <div class="card">
@@ -980,7 +1028,16 @@ function viewMonitoring() {
 // =====================================================================
 // Events (one delegated listener per event type)
 // =====================================================================
+// Alternative identification: reason of the cell under the pointer; back to the default text outside the table.
+document.addEventListener('mouseover', e => {
+  const td = e.target.closest('td.ef');
+  if (td) showIdentReason(td);
+  else if (!e.target.closest('table.effects') && document.querySelector('#ident-note.showing-reason')) showIdentReason(null);
+});
+
 document.addEventListener('click', e => {
+  const cell = e.target.closest('td.ef');   // tap on touch screens
+  if (cell) { showIdentReason(cell); return; }
   const el = e.target.closest('[data-action]');
   if (!el || el.tagName === 'INPUT') return;
   const a = el.dataset.action;
@@ -1043,6 +1100,9 @@ document.addEventListener('change', e => {
     const { stage, variant, crit } = e.target.dataset;
     const byVariant = (state.draft[stage] = state.draft[stage] || {});
     (byVariant[variant] = byVariant[variant] || {})[crit] = e.target.value;
+    const cell = e.target.closest('tr').lastElementChild;   // delta column
+    const alt = currentConfiguration().find(r => r.stage.id === stage).sel.alt;
+    cell.innerHTML = revisionDelta(expectedPerformance(alt, crit), e.target.value ? LEVELS[e.target.value] : null);
   } else if (a === 'deployment') {
     state.selections[e.target.dataset.stage] = e.target.value;
     $('#selection').innerHTML = selectionSection();

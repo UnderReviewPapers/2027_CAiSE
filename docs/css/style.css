@@ -303,7 +303,9 @@ table.alts .group-row .muted { text-transform: none; letter-spacing: 0; font-wei
 .table-note { margin: 10px 0 0; font-size: 12px; }   /* legend below a table */
 .actions.page-actions { margin: 18px 0; }   /* page-level button at the end of a page, spaced like .nav-buttons */
 
-.question { border: 1px solid var(--border-soft); border-radius: 10px; background: #fcfdfd; padding: 13px 14px; margin: 0 0 12px; }
+/* Questions without their own box: a thin line separates consecutive questions in the same group */
+.question { border: 0; padding: 0; margin: 0 0 14px; min-width: 0; }
+.question + .question { border-top: 1px solid var(--border-soft); padding-top: 14px; }
 .question:last-child { margin-bottom: 0; }
 .question legend { float: left; width: 100%; font-weight: 760; font-size: 13px; color: var(--ink); margin-bottom: 9px; }
 .option {
@@ -326,7 +328,13 @@ table.effects thead th { background: #f8fafb; font-size: 10px; letter-spacing: .
 table.effects tbody + tbody { border-top: 2px solid var(--border); }
 table.effects .ef-stage { text-align: left; font-weight: 750; font-size: 12px; color: var(--ink); min-width: 92px; }
 table.effects .ef-dep { color: var(--muted); font-size: 11px; }
-td.ef { font-weight: 750; font-variant-numeric: tabular-nums; cursor: help; border-left: 2px solid #fff; }
+td.ef { font-weight: 750; font-variant-numeric: tabular-nums; cursor: default; border-left: 2px solid #fff; }
+td.ef.ef-active { outline: 2px solid var(--ink); outline-offset: -2px; }   /* cell whose reason is shown below the table */
+.table-note.showing-reason { color: var(--text); }
+/* A table that is itself the box (no card around it) */
+.table-wrap.table-box { background: var(--surface); }
+/* Room for three lines, so a longer reason does not move what follows */
+.table-note.ident-note { min-height: calc(3 * 1.45em); line-height: 1.45; margin-top: 8px; }
 
 .st-feasible { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-dark); }
 .st-best { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -428,23 +436,42 @@ table.revision select { font: inherit; font-size: 12.5px; padding: 4px 6px; bord
 }
 
 /* ---------- Monitoring: update of the expected performance, one box per stage ---------- */
-.revision-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: stretch; }
+.revision-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+@media (max-width: 760px) { .revision-grid { grid-template-columns: 1fr; } }
 table.revision { width: 100%; }
 table.revision th, table.revision td { padding: 7px 10px; }
 table.revision .evidence { font-weight: 500; font-size: 11px; color: var(--muted); white-space: normal; }
 /* Criterion names wrap so that the "New" column has room for the measured note */
 table.revision { table-layout: fixed; }
 table.revision tbody th { white-space: normal; }
-table.revision th:nth-child(1) { width: 27%; }
-table.revision th:nth-child(2) { width: 30%; }
-table.revision th:nth-child(3) { width: 43%; }
+table.revision th:nth-child(1) { width: 25%; }
+table.revision th:nth-child(2) { width: 26%; }
+table.revision th:nth-child(3) { width: 31%; }
+table.revision th:nth-child(4) { width: 18%; }
+table.revision .level { font-weight: 500; font-size: 10.5px; color: var(--muted); }
+table.revision td .small { font-size: 11px; }   /* "= 0.5" next to the level */
+.subcard-head .alt-name { font-weight: 400; color: var(--muted); }
+/* Delta between new and current value, coloured by distance (see revisionDelta in app.js) */
+.delta { display: inline-block; padding: 2px 7px; border-radius: 999px; border: 1px solid; font-size: 11.5px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta.d-close { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-dark); }
+.delta.d-mid   { background: #fdf6ea;  border-color: #efe0c6;  color: #9d7233; }   /* slightly lighter than --amber-line / --amber */
+.delta.d-far   { background: #fdf3f2;    border-color: #f0d2ce;  color: #b45353; }   /* slightly lighter than --bad-line / --bad */
 /* Sub-section of a design activity (e.g. update of the expected performance in monitoring) */
 .section-head { display: flex; align-items: baseline; gap: 12px; margin: 26px 0 6px; padding-top: 20px; border-top: 1px solid var(--border); }
 .section-head h3 { margin: 0; font-size: 15.5px; color: var(--ink); letter-spacing: -.2px; }
 
 /* ---------- Monitoring: diagnostics ---------- */
-.constraints-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (max-width: 1000px) { .constraints-grid.three { grid-template-columns: 1fr; } }
+/* Constraints on the left, wider diagnostics on the right, suggestions below across both */
+.constraints-grid { grid-template-columns: 1fr; }
+.constraints-grid.with-diag { grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); }
+.diag-suggestions { border-top: 1px solid var(--border-soft); padding-top: 12px; margin-top: 6px; }
+@media (max-width: 1000px) { .constraints-grid.with-diag { grid-template-columns: 1fr; } }
+.constraints-grid .pad-label { margin-top: 12px; }
+.constraints-grid .label-note { color: var(--muted); }
+/* Diagnostics: two columns (largest share | estimates far from the measurement) */
+.diag-cols { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 0 6px; padding: 12px 0 4px; }
+.diag-cols > div + div { border-left: 1px solid var(--border-soft); }
+@media (max-width: 700px) { .diag-cols { grid-template-columns: 1fr; } .diag-cols > div + div { border-left: 0; } }
 .diag-list { margin: 0; padding: 10px 14px 4px 30px; font-size: 12.5px; }
 .diag-list li { margin-bottom: 6px; }
 .pad-label { padding: 0 14px; margin-top: 6px; }
@@ -477,3 +504,12 @@ table.revision th:nth-child(3) { width: 43%; }
 .alt-columns .characteristics { margin-top: 10px; }   /* same spacing as between the other facts */
 .alt-columns .perf-list li { grid-template-columns: minmax(0, 1fr) auto; }
 @media (max-width: 760px) { .alt-columns { grid-template-columns: 1fr; } }
+
+/* Diagnostics tables (most demanding stages, estimates far from the measurement): compact, inside the column padding */
+table.alts.diag-table { width: calc(100% - 28px); margin: 0 14px 6px; }
+table.alts.diag-table th, table.alts.diag-table td { padding: 6px 8px; vertical-align: middle; }
+table.alts.diag-table thead th { font-size: 10px; }   /* keeps the header background of table.alts */
+table.alts.diag-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+/* "% of total" on one line: the column takes the width it needs, the stage column gives way */
+table.alts.diag-table thead th.num { white-space: nowrap; width: 1%; }
+.subcard .pad.diag-empty { padding-top: 14px; }   /* diagnostics before the execution */
